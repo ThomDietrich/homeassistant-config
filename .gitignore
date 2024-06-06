@@ -1,0 +1,61 @@
+# Logs
+logs
+*.log
+
+# Python cache
+__pycache__
+*.pyc
+
+# Sensitive
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.db.corrupt.*
+*.sqlite
+ip_bans.yaml
+known_devices.yaml
+secrets.yaml
+
+# Non-track folders
+blueprints/
+custom_components/
+custom_templates/
+tts/
+www/icons/
+www/floorplans/
+www/community/
+
+# Other
+*.uuid
+*.conf
+*.noload
+*.txt
+*.xml
+*.backup
+*.json
+life360.sh
+.ip_authenticated.yaml
+.config_entries.json
+*.google.token
+.google.token
+.ring_cache.pickle
+.spotify-token-cache
+.storage
+abodepy_cache.pickle
+camera_recording.py
+home-assistant.env
+home-assistant.*
+entity_registry.yaml
+google_calendars.yaml
+SERVICE_ACCOUNT.json
+icloud
+dlib_faces
+dlib_nofaces
+dlib_known_faces
+dlib_unknown_faces
+.cloud
+*.pickle
+.pc-session
+google*.deb
+.homekit.state
