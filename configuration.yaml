@@ -1,0 +1,73 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+#default_config:
+# https://github.com/abjugard/homeassistant-mostly_default_config
+mostly_default_config:
+  exclude:
+    - cloud
+    - map
+
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+homeassistant:
+  packages: !include_dir_named packages
+
+frontend:
+  themes: !include_dir_merge_named themes
+  extra_module_url:
+    - /config/www/community/lovelace-card-mod/card-mod.js
+
+recorder:
+  purge_keep_days: 3
+  auto_purge: true
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.23.0/24
+
+logger:
+  default: info
+  logs:
+    #homeassistant.core: info
+    homeassistant.components.mqtt: info
+
+logbook:
+  exclude:
+    entities:
+      - sensor.weather_station_weewx_update_datetime
+      - sensor.epaper_display_oben_last_update
+      - sensor.watchman_last_updated
+      - automation.regel_heizungsregelung_gastherme_sollwert_uber_prozent_schieberegler
+      - automation.regel_heizungsregelung_gastherme_sollwert_uber_em10_vorlauftemperatur
+      - automation.regel_heizungsregelung_gastherme_sollwert_uber_volt_schieberegler
+      #- automation.regel_heizungsregelung_heizung_folgt_heizkennlinie
+
+# Nurzen Kalender
+calendar:
+  - platform: caldav
+    username: !secret nurzen_caldav_user
+    password: !secret nurzen_caldav_password
+    url: https://mail.nurzen.de/SOGo/dav/stephan@nurzen.de/Calendar/3A-5C33AA00-23-34808700.ics
+    calendars:
+      - Persönlicher Kalender
+      - Nurzen100 (Stephan Dietrich <stephan@nurzen.de>)
+    days: 30
+
+zha:
+  zigpy_config:
+    ota:
+      extra_providers:
+        - type: ikea
+        - type: ledvance
+
+zha_toolkit:
+
+favicon:
+  title: AWF1877 – HomeAssistant
+  icon_path: /local/favicons/
