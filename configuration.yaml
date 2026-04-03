@@ -48,15 +48,15 @@ logbook:
       - automation.regel_heizungsregelung_gastherme_sollwert_uber_volt_schieberegler
       #- automation.regel_heizungsregelung_heizung_folgt_heizkennlinie
 
-# Nurzen Kalender
+# CalDAV Kalender
 calendar:
   - platform: caldav
-    username: !secret nurzen_caldav_user
-    password: !secret nurzen_caldav_password
-    url: https://mail.nurzen.de/SOGo/dav/stephan@nurzen.de/Calendar/3A-5C33AA00-23-34808700.ics
+    username: !secret caldav_user
+    password: !secret caldav_password
+    url: !secret caldav_url
     calendars:
-      - Persönlicher Kalender
-      - Nurzen100 (Stephan Dietrich <stephan@nurzen.de>)
+      - !secret caldav_calendar_1
+      - !secret caldav_calendar_2
     days: 30
 
 zha:

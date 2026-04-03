@@ -36,6 +36,7 @@ solcast_solar/
 
 # Zigbee2MQTT runtime
 zigbee2mqtt/*_backup*.yaml
+zigbee2mqtt/secret.yaml
 
 # Other
 *.uuid
