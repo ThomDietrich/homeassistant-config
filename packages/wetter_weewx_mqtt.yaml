@@ -1,0 +1,343 @@
+mqtt:
+  sensor:
+    - name: weather_station_outtemp_c
+      unique_id: uniqueid__weather_outtemp_c
+      icon: mdi:thermometer
+      state_topic: "weather/outTemp_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_intemp_c
+      unique_id: uniqueid__weather_intemp_c
+      icon: mdi:thermometer
+      state_topic: "weather/inTemp_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_dewpoint_c
+      unique_id: uniqueid__weather_dewpoint_c
+      icon: mdi:thermometer
+      state_topic: "weather/dewpoint_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_indewpoint_c
+      unique_id: uniqueid__weather_indewpoint_c
+      icon: mdi:thermometer
+      state_topic: "weather/inDewpoint_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_windchill_c
+      unique_id: uniqueid__weather_windchill_c
+      icon: mdi:thermometer
+      state_topic: "weather/windchill_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_apptemp_c
+      unique_id: uniqueid__weather_apptemp_c
+      icon: mdi:thermometer
+      state_topic: "weather/appTemp_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_heatindex_c
+      unique_id: uniqueid__weather_geatindex_c
+      icon: mdi:thermometer
+      state_topic: "weather/heatindex_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: weather_station_humidex_c
+      unique_id: uniqueid__weather_humindex_c
+      icon: mdi:thermometer
+      state_topic: "weather/humidex_C"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    #############################################################################
+
+    - name: weather_station_outhumidity
+      unique_id: uniqueid__weather_outhumidity
+      icon: mdi:water-percent
+      state_topic: "weather/outHumidity"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "%"
+      device_class: humidity
+
+    - name: weather_station_inhumidity
+      unique_id: uniqueid__weather_inhumidity
+      icon: mdi:water-percent
+      state_topic: "weather/inHumidity"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "%"
+      device_class: humidity
+
+    - name: weather_station_altimeter_mbar
+      unique_id: uniqueid__weather_altimeter_atmospheric
+      icon: mdi:gauge
+      state_topic: "weather/altimeter_mbar"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mbar"
+      device_class: atmospheric_pressure
+
+    - name: weather_station_pressure_mbar
+      unique_id: uniqueid__weather_pressure_atmospheric
+      icon: mdi:gauge
+      state_topic: "weather/pressure_mbar"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mbar"
+      device_class: atmospheric_pressure
+
+    - name: weather_station_barometer_mbar
+      unique_id: uniqueid__weather_barometer_atmospheric
+      icon: mdi:gauge
+      state_topic: "weather/barometer_mbar"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mbar"
+      device_class: atmospheric_pressure
+
+    #############################################################################
+    - name: weather_station_windspeed_kph
+      unique_id: uniqueid__weather_windspeed_kph
+      icon: mdi:weather-windy
+      state_topic: "weather/windSpeed_kph"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "km/h"
+      device_class: wind_speed
+
+    - name: weather_station_windgust_kph
+      unique_id: uniqueid__weather_windgust_kph
+      icon: mdi:weather-windy-variant
+      state_topic: "weather/windGust_kph"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "km/h"
+      device_class: wind_speed
+
+    - name: weather_station_winddir
+      unique_id: uniqueid__weather_winddir
+      icon: mdi:wind-turbine
+      state_topic: "weather/windDir"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°"
+
+    - name: weather_station_windgustdir
+      unique_id: uniqueid__weather_windgustdir
+      icon: mdi:wind-turbine
+      state_topic: "weather/windGustDir"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "°"
+
+    - name: weather_station_windrun_km
+      unique_id: uniqueid__weather_windrun_km
+      icon: mdi:wind-turbine
+      state_topic: "weather/windrun_km"
+      value_template: "{{ value | round(3) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "km"
+      device_class: distance
+
+    - name: weather_station_rainrate_mm_per_hour
+      unique_id: uniqueid__weather_rainrate_mm_per_hour
+      icon: mdi:umbrella-outline
+      state_topic: "weather/rainRate_cm_per_hour"
+      value_template: "{{ (value | float * 10) | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm/h"
+      device_class: precipitation_intensity
+
+    - name: weather_station_rain_mm
+      unique_id: uniqueid__weather_rain_mm
+      icon: mdi:umbrella
+      state_topic: "weather/rain_cm"
+      value_template: "{{ (value | float * 10) | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      force_update: true # important!
+
+    - name: weather_station_rain24_mm
+      unique_id: uniqueid__weather_rain24_mm
+      icon: mdi:umbrella
+      state_topic: "weather/rain24_cm"
+      value_template: "{{ (value | float * 10) | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm"
+      device_class: precipitation
+
+    - name: weather_station_hourrain_mm
+      unique_id: uniqueid__weather_hourrain_mm
+      icon: mdi:umbrella
+      state_topic: "weather/hourRain_cm"
+      value_template: "{{ (value | float * 10) | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm"
+      device_class: precipitation
+
+    - name: weather_station_dayrain_mm
+      unique_id: uniqueid__weather_dayrain_mm
+      icon: mdi:umbrella
+      state_topic: "weather/dayRain_cm"
+      value_template: "{{ (value | float * 10) | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm"
+      device_class: precipitation
+
+    - name: weather_station_evapotranspiration_mm
+      unique_id: uniqueid__evapotranspiration_mm
+      icon: mdi:water-opacity
+      state_topic: "weather/ET_cm"
+      value_template: "{{ (value | float * 10) | round(5) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      force_update: true # important!
+
+    #############################################################################
+
+    - name: weather_station_radiation_wpm2
+      unique_id: uniqueid__weather_radiation_irradiance
+      icon: mdi:radioactive
+      state_topic: "weather/radiation_Wpm2"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "W/m²"
+      device_class: irradiance
+
+    - name: weather_station_maxsolarrad_wpm2
+      unique_id: uniqueid__weather_maxsolarrad_irradiance
+      icon: mdi:radioactive
+      state_topic: "weather/maxSolarRad_Wpm2"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "W/m²"
+      device_class: irradiance
+
+    - name: weather_station_cloudbase_meter
+      unique_id: uniqueid__weather_cloudbase_distance
+      state_topic: "weather/cloudbase_meter"
+      value_template: "{{ value | round(0) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: "m"
+      device_class: distance
+
+    - name: weather_station_uv
+      unique_id: uniqueid__weather_uv
+      icon: mdi:sunglasses
+      state_topic: "weather/UV"
+      value_template: "{{ value | round(1) }}"
+      availability_topic: "weather/availability"
+      unit_of_measurement: ""
+
+    #############################################################################
+
+    - name: weather_station_weewx_update_datetime
+      unique_id: uniqueid__weather_datetime
+      icon: mdi:calendar-clock
+      state_topic: "weather/dateTime"
+      value_template: "{{ value | int | timestamp_local() }}"
+      availability_topic: "weather/availability"
+      device_class: timestamp
+
+template:
+  - binary_sensor:
+      - name: weather_station_weewx_connected
+        unique_id: uniqueid__weather_connected
+        icon: mdi:calendar-sync-outline
+        state: >
+          {%- set seconds = (now() - states.sensor.weather_station_weewx_update_datetime.last_changed).total_seconds() -%}
+          {{ seconds < 120 }}
+        availability: >
+          {{ has_value('sensor.weather_station_weewx_update_datetime') }}
+        device_class: connectivity
+
+  #############################################################################
+
+homeassistant:
+  customize:
+    sensor.weather_station_outtemp_c:
+      friendly_name: "Ventus W830 Temperatur"
+    sensor.weather_station_intemp_c:
+      friendly_name: "Ventus W830 Temperatur (innen)"
+    sensor.weather_station_dewpoint_c:
+      friendly_name: "Ventus W830 Taupunkt"
+    sensor.weather_station_indewpoint_c:
+      friendly_name: "Ventus W830 Taupunkt (innen)"
+    sensor.weather_station_windchill_c:
+      friendly_name: "Ventus W830 Windkühle"
+    sensor.weather_station_apptemp_c:
+      friendly_name: "Ventus W830 gefühlte Temperatur"
+    sensor.weather_station_heatindex_c:
+      friendly_name: "Ventus W830 Hitzeindex"
+    sensor.weather_station_humidex_c:
+      friendly_name: "Ventus W830 Luftfeuchte-Index"
+    sensor.weather_station_outhumidity:
+      friendly_name: "Ventus W830 Luftfeuchte"
+    sensor.weather_station_inhumidity:
+      friendly_name: "Ventus W830 Luftfeuchte (innen)"
+    sensor.weather_station_altimeter_mbar:
+      friendly_name: "Ventus W830 Luftdruck (Altimeter, QNH)"
+    sensor.weather_station_pressure_mbar:
+      friendly_name: "Ventus W830 Luftdruck (Absolut, QFE)"
+    sensor.weather_station_barometer_mbar:
+      friendly_name: "Ventus W830 Luftdruck (Meeresspiegel, Temperatur, QFF)"
+    sensor.weather_station_windspeed_kph:
+      friendly_name: "Ventus W830 Windgeschwindigkeit"
+    sensor.weather_station_windgust_kph:
+      friendly_name: "Ventus W830 Böengeschwindigkeit"
+    sensor.weather_station_winddir:
+      friendly_name: "Ventus W830 Windrichtung"
+    sensor.weather_station_windgustdir:
+      friendly_name: "Ventus W830 Böenrichtung"
+    sensor.weather_station_windrun_km:
+      friendly_name: "Ventus W830 Windlauf"
+    sensor.weather_station_rainrate_mm_per_hour:
+      friendly_name: "Ventus W830 Regenrate"
+    sensor.weather_station_rain_mm:
+      friendly_name: "Ventus W830 Regen"
+    sensor.weather_station_rain24_mm:
+      friendly_name: "Ventus W830 Regen (24h)"
+    sensor.weather_station_hourrain_mm:
+      friendly_name: "Ventus W830 Regen (Stunde)"
+    sensor.weather_station_dayrain_mm:
+      friendly_name: "Ventus W830 Regen (Tag)"
+    sensor.weather_station_evapotranspiration_mm:
+      friendly_name: "Ventus W830 EvapoTranspiration (ET)"
+    sensor.weather_station_radiation_wpm2:
+      friendly_name: "Ventus W830 Sonnenstrahlung"
+    sensor.weather_station_maxsolarrad_wpm2:
+      friendly_name: "Ventus W830 Sonnenstrahlung Maximum"
+    sensor.weather_station_cloudbase_meter:
+      friendly_name: "Ventus W830 Wolkenuntergrenze"
+    sensor.weather_station_uv:
+      friendly_name: "Ventus W830 UV-Index"
+    sensor.weather_station_weewx_update_datetime:
+      friendly_name: "Ventus W830 Letzte Aktualisierung"
+    binary_sensor.weather_station_weewx_connected:
+      friendly_name: "Ventus W830 Regelmäßige Aktualisierungen"

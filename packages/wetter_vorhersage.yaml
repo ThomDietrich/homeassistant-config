@@ -1,0 +1,85 @@
+template:
+  - trigger:
+      - trigger: time_pattern
+        hours: /1
+        minutes: 1 # 1 minute past the hour, every hour
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: weather.get_forecasts
+        target:
+          entity_id: weather.dwd_alperstedt
+        data:
+          type: daily
+        response_variable: response
+      - variables:
+          forecast_day: "{{ response['weather.dwd_alperstedt'].forecast[0 if now().hour < 16 else 1] }}"
+    sensor:
+      - name: dwd_forecast_tagesstempel
+        state: >-
+          {{'Heute' if now().hour < 16 else 'Morgen' }}
+
+      - name: dwd_forecast_condition
+        state: >-
+          {%- set state = forecast_day.condition -%}
+          {% if state == 'clear-night' %}        Klare Nacht
+          {% elif state == 'cloudy' %}           Wolkig
+          {% elif state == 'exceptional' %}      Außergewöhnlich
+          {% elif state == 'fog' %}              Nebel
+          {% elif state == 'hail' %}             Hagel
+          {% elif state == 'lightning' %}        Gewitter
+          {% elif state == 'lightning-rainy' %}  Gewitterregen
+          {% elif state == 'partlycloudy' %}     Teils Wolkig
+          {% elif state == 'pouring' %}          Nieselregen
+          {% elif state == 'rainy' %}            Regen
+          {% elif state == 'snowy' %}            Schnee
+          {% elif state == 'snowy-rainy' %}      Schneeregen
+          {% elif state == 'sunny' %}            Sonnig
+          {% elif state == 'windy' %}            Windig
+          {% elif state == 'windy-variant' %}    Böig
+          {% elif state == 'none' %} -Unbekannt-
+          {% else %} {{ state }}
+          {% endif %}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_temp
+        unit_of_measurement: "°C"
+        state: >
+          {{ forecast_day.temperature }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_templow
+        unit_of_measurement: "°C"
+        state: >
+          {{ forecast_day.templow }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_precipitation
+        unit_of_measurement: "mm"
+        state: >
+          {{ forecast_day.precipitation }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_precipitation_probability
+        unit_of_measurement: "%"
+        state: >
+          {{ forecast_day.precipitation_probability }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_wind_speed
+        unit_of_measurement: "km/h"
+        state: >
+          {{ forecast_day.wind_speed | round(1) }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
+
+      - name: dwd_forecast_wind_bearing
+        state: >
+          {{ forecast_day.wind_bearing }}
+        availability: >
+          {{ has_value('weather.dwd_alperstedt') }}
