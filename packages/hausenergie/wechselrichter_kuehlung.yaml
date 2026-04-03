@@ -1,0 +1,54 @@
+automation:
+  - alias: Dachboden 10KTL Lueftung an
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        above: 55
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        above: 60
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        above: 65
+    action:
+      - action: switch.turn_on
+        entity_id: switch.dachboden_10ktl_lueftung
+
+  - alias: Dachboden 10KTL Lueftung aus
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        below: 50
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        below: 45
+    action:
+      - action: switch.turn_off
+        entity_id: switch.dachboden_10ktl_lueftung
+
+  - alias: Dachboden 10KTL Temperatur Alarm
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        above: 72
+    action:
+      - action: script.notify_warnung
+        data:
+          msg_title: "AWF1877 Hausenergie"
+          msg_text: "Wechselrichter hat ungewöhnlich hohe Systemtemperatur erreicht ({{ trigger.to_state.state }} °C). Bitte prüfen."
+
+
+  - alias: Dachboden 10KTL Lueftung unavailable Meldung
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.dachboden_10ktl_internal_temperature
+        above: 60
+    condition:
+      - condition: state
+        entity_id: switch.dachboden_10ktl_lueftung
+        state: "unavailable"
+    action:
+      - action: script.notify_warnung
+        data:
+          msg_title: "AWF1877 Hausenergie"
+          msg_text: "Wechselrichter Lüftung ist nicht verfügbar während Wechselrichter Systemtemperatur ansteigt ({{ trigger.to_state.state }} °C). Bitte prüfen."

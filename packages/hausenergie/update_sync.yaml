@@ -1,0 +1,56 @@
+automation:
+  - alias: "Regel Daten vom Wechselrichter in annähernd Echtzeit auslesen"
+    mode: single
+    trigger:
+      - trigger: time_pattern
+        hours: "*"
+        minutes: "*"
+        seconds: "/1"
+    action:
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+            - sensor.dachboden_10ktl_active_power
+            - sensor.dachboden_10ktl_total_yield
+
+  - alias: "Regel Leistung vom Smartmeter parallel zu Wechselrichter auslesen"
+    trigger:
+      - trigger: state
+        entity_id:
+          - sensor.dachboden_10ktl_active_power
+    action:
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+            - sensor.torfahrtsschuppen_smartmeter_em540_w_sys
+
+  - alias: "Regel Leistung vom Smartmeter auslesen wenn Wechselrichter nicht aktiv"
+    trigger:
+      - trigger: time_pattern
+        hours: "*"
+        minutes: "*"
+        seconds: "/5"
+    condition:
+      or:
+        - alias: "Wechselrichter produziert über Nacht 0W"
+          condition: numeric_state
+          entity_id: sensor.dachboden_10ktl_active_power
+          below: 1
+        - alias: "Wechselrichter nicht operativ"
+          condition: state
+          entity_id: sensor.dachboden_10ktl_active_power
+          state:
+            - unknown
+            - unavailable
+    action:
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+            - sensor.torfahrtsschuppen_smartmeter_em540_w_sys
+
+logbook:
+  exclude:
+    entities:
+      - automation.regel_daten_vom_wechselrichter_in_annahernd_echtzeit_auslesen
+      - automation.regel_leistung_vom_smartmeter_parallel_zu_wechselrichter_auslesen
+      - automation.regel_leistung_vom_smartmeter_auslesen_wenn_wechselrichter_nicht_aktiv

@@ -1,0 +1,10 @@
+homeassistant:
+  customize:
+    # Add an entry for each entity that you want to overwrite.
+    sensor.haus_uv_unbemessene_sicherungen_17a_18b_19c_20a_27_33a_34b_35c_47b_48_power:
+      Sicherung 17A 18B 19C: OG Kueche Herd
+      Sicherung 20A: OG UV Sonstiges
+      Sicherung 27: frei
+      Sicherung 33A 34B 35C: Terrasse Kraftsteckdose
+      Sicherung 47B: Milchhaus, Einmachkeller, Torfahrtsschuppen, Torfahrtskeller, Stallung, Garage, Scheune
+      Sicherung 48: frei

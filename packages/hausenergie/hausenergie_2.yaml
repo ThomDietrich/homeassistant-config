@@ -1,0 +1,48 @@
+utility_meter:
+  torfahrtsschuppen_haushaltsverbrauch_daily:
+    unique_id: unique_id__house_consumption_energy_daily
+    name: "Torfahrtsschuppen Haushaltsverbrauch daily"
+    source: sensor.torfahrtsschuppen_haushaltsverbrauch_total
+    cycle: daily
+    net_consumption: True
+
+  torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily:
+    unique_id: unique_id__solar_self_energy_daily
+    name: "Torfahrtsschuppen Photovoltaik Energie Eigenverbrauch daily"
+    source: sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_total
+    cycle: daily
+    net_consumption: True
+
+template:
+  - sensor:
+      - name: Torfahrtsschuppen Energieselbstversorgung daily
+        unique_id: unique_id__house_self_sufficiency_daily
+        state_class: "measurement"
+        unit_of_measurement: "%"
+        icon: mdi:label-percent-outline
+        state: >-
+          {% set inv_self_use_daily = states('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily') | float(0) %}
+          {% set house_consumption_daily = states('sensor.torfahrtsschuppen_haushaltsverbrauch_daily') | float(0) %}
+          {% if house_consumption_daily > 0 and inv_self_use_daily > 0 %}
+            {{ (inv_self_use_daily / house_consumption_daily * 100) | round(1) }}
+          {% else %}
+            {{ states('sensor.torfahrtsschuppen_energieselbstversorgung_daily') | float(0) }}
+          {% endif %}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily') and has_value('sensor.torfahrtsschuppen_haushaltsverbrauch_daily') }}
+
+      - name: Torfahrtsschuppen Photovoltaik Energie Eigenverbrauchsanteil daily
+        unique_id: unique_id__solar_self_use_daily
+        state_class: "measurement"
+        unit_of_measurement: "%"
+        icon: mdi:label-percent-outline
+        state: >-
+          {% set inv_self_use_daily = states('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily') | float(0) %}
+          {% set inv_yield_daily = states('sensor.dachboden_10ktl_daily_yield') | float(0) %}
+          {% if inv_yield_daily > 0 and inv_self_use_daily > 0 %}
+            {{ (inv_self_use_daily / inv_yield_daily * 100) | round(1) }}
+          {% else %}
+            {{ states('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauchsanteil_daily') | float(0) }}
+          {% endif %}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily') and has_value('sensor.dachboden_10ktl_daily_yield') }}

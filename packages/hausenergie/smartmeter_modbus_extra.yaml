@@ -1,0 +1,124 @@
+template:
+  - sensor:
+      # Übersetzung der Zustände
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Carlo Gavazzi Controls identification code
+        unique_id: unique_id__em540_cgc_id_code
+        icon: mdi:axis-arrow
+        state: >
+          {%- set raw = states('sensor.torfahrtsschuppen_smartmeter_em540_carlo_gavazzi_controls_identification_code_raw') -%}
+          {% if raw == '1760' %}
+            EM540DINAV23XS1X
+          {% else %}
+            unknown
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_carlo_gavazzi_controls_identification_code_raw') }}
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Firmware
+        unique_id: unique_id__em540_firmware
+        icon: mdi:ticket-confirmation-outline
+        state: >
+          {%- set raw = states('sensor.torfahrtsschuppen_smartmeter_em540_firmware_raw') -%}
+          {%- set lsb_revision = states('sensor.torfahrtsschuppen_smartmeter_em540_firmware_raw') | int(0) | bitwise_and(255) -%}
+          {%- set msb = ((states('sensor.torfahrtsschuppen_smartmeter_em540_firmware_raw') | float(0) - lsb_revision) / 256) | int(0) -%}
+          {%- set minor = msb | bitwise_and(7) -%}
+          {%- set major = (msb / 16) | int(0) -%}
+          {%- set version = major | string() + '.' + minor | string() + ' rev ' + lsb_revision | string() -%}
+          {{ version }}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_firmware_raw') }}
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Measurement mode
+        unique_id: unique_id__em540_measure_mode
+        icon: mdi:axis-arrow
+        state: >
+          {%- set raw = states('sensor.torfahrtsschuppen_smartmeter_em540_measurement_mode_raw') -%}
+          {% if raw == '0' %}
+            A mode (PFA Absolute)
+          {% elif raw == '1' %}
+            B mode (PFB Counters accumulation by phase)
+          {% elif raw == '2' %}
+            C mode (PFC Bidirectional)
+          {% else %}
+            unknown
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_measurement_mode_raw') }}
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Device state
+        unique_id: unique_id__em540_dev_state
+        icon: mdi:axis-arrow
+        state: >
+          {%- set raw = states('sensor.torfahrtsschuppen_smartmeter_em540_device_state_raw') -%}
+          {% if raw == '0' %}
+            RUN
+          {% elif raw == '1' %}
+            FAULT
+          {% elif raw == '2' %}
+            CONFIGURATION ERROR
+          {% else %}
+            unknown
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_device_state_raw') }}
+
+      #
+      # Leistung
+      #
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Anschluss Leistungsflussrichtung
+        unique_id: unique_id__em540_w_direction
+        icon: mdi:transmission-tower
+        state: >-
+          {% set smartmeter_active_power = states('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') | float(0) %}
+          {{ "Import" if smartmeter_active_power > 0 else "Export" }}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') }}
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W+ (imported)
+        unique_id: unique_id__em540_w_imported
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:transmission-tower-export
+        state: >-
+          {% set smartmeter_active_power = states('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') | float(0) %}
+          {{ smartmeter_active_power if smartmeter_active_power > 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') }}
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W- (exported)
+        unique_id: unique_id__em540_w_exported
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:transmission-tower-import
+        state: >-
+          {% set smartmeter_active_power = states('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') | float(0) %}
+          {{ (-1) * smartmeter_active_power if smartmeter_active_power < 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') }}
+
+#
+
+utility_meter:
+  torfahrtsschuppen_smartmeter_em540_kwh_imported_daily:
+    unique_id: unique_id__em540_kwh_imported_daily
+    name: "Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) daily"
+    source: sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total
+    cycle: daily
+
+  torfahrtsschuppen_smartmeter_em540_kwh_exported_daily:
+    unique_id: unique_id__em540_kwh_exported_daily
+    name: "Torfahrtsschuppen SmartMeter EM540 kWh- (exported) daily"
+    source: sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total
+    cycle: daily
+
+  torfahrtsschuppen_smartmeter_em540_kwh_imported_nightly:
+    unique_id: unique_id__em540_kwh_imported_nightly
+    name: "Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) nightly"
+    source: sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total
+    cycle: daily
+    offset:
+      hours: 12

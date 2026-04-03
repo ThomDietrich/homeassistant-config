@@ -1,0 +1,381 @@
+modbus:
+  - name: Protoss PE11-H Torfahrtsschuppen SmartMeter EM540
+    type: tcp
+    host: 192.168.23.238
+    port: 8899
+    sensors:
+      # Reference: https://gavazzi.se/app/uploads/2022/03/em500-cp-v1r3-eng.pdf
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Carlo Gavazzi Controls identification code raw
+        unique_id: unique_id__em540_cgc_id_code_raw
+        slave: 1
+        address: 0x000B
+        data_type: uint16
+        scan_interval: 3600
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Firmware raw
+        unique_id: unique_id__em540_firmware_raw
+        slave: 1
+        address: 0x0302
+        data_type: uint16
+        scan_interval: 3600
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Measurement mode raw
+        unique_id: unique_id__em540_measure_mode_raw
+        slave: 1
+        address: 0x1103
+        data_type: uint16
+        scan_interval: 3600
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Device state raw
+        unique_id: unique_id__em540_dev_state_raw
+        slave: 1
+        address: 0x5012
+        data_type: uint16
+        scan_interval: 60
+
+      ##########################################################################
+      # Voltage
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L1-N
+        unique_id: unique_id__em540_v_l1_n
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0000
+        data_type: int32 # "Data Format" -> int32 = 2 words
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L2-N
+        unique_id: unique_id__em540_v_l2_n
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0002
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L3-N
+        unique_id: unique_id__em540_v_l3_n
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0004
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      #
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L1-L2
+        unique_id: unique_id__em540_v_l1_l2
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0006
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L2-L3
+        unique_id: unique_id__em540_v_l2_l3
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0008
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L3-L1
+        unique_id: unique_id__em540_v_l3_l1
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x000A
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      #
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L-N sys
+        unique_id: unique_id__em540_v_l_n_sys
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0024
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 V L-L sys
+        unique_id: unique_id__em540_v_l_l_sys
+        unit_of_measurement: V
+        state_class: measurement
+        device_class: voltage
+        slave: 1
+        address: 0x0026
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      ##########################################################################
+      # Current
+
+      - name: Torfahrtsschuppen SmartMeter EM540 A L1
+        unique_id: unique_id__em540_a_l1
+        unit_of_measurement: A
+        state_class: measurement
+        device_class: current
+        slave: 1
+        address: 0x000C
+        data_type: int32
+        swap: word
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 A L2
+        unique_id: unique_id__em540_a_l2
+        unit_of_measurement: A
+        state_class: measurement
+        device_class: current
+        slave: 1
+        address: 0x000E
+        data_type: int32
+        swap: word
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 A L3
+        unique_id: unique_id__em540_a_l3
+        unit_of_measurement: A
+        state_class: measurement
+        device_class: current
+        slave: 1
+        address: 0x0010
+        data_type: int32
+        swap: word
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      ##########################################################################
+      # Power
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W L1
+        unique_id: unique_id__em540_w_l1
+        unit_of_measurement: W
+        state_class: measurement
+        device_class: power
+        slave: 1
+        address: 0x0012
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 5
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W L2
+        unique_id: unique_id__em540_w_l2
+        unit_of_measurement: W
+        state_class: measurement
+        device_class: power
+        slave: 1
+        address: 0x0014
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 5
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W L3
+        unique_id: unique_id__em540_w_l3
+        unit_of_measurement: W
+        state_class: measurement
+        device_class: power
+        slave: 1
+        address: 0x0016
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 5
+
+      #
+
+      - name: Torfahrtsschuppen SmartMeter EM540 W sys
+        unique_id: unique_id__em540_w_sys
+        unit_of_measurement: W
+        state_class: measurement
+        device_class: power
+        slave: 1
+        address: 0x0028
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 0 # Updated via synchronous automation
+
+      ##########################################################################
+      # Powerfactor
+
+      - name: Torfahrtsschuppen SmartMeter EM540 PF L1
+        unique_id: unique_id__em540_pf_l1
+        unit_of_measurement: ""
+        state_class: measurement
+        device_class: power_factor
+        slave: 1
+        address: 0x002E
+        data_type: int16
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 PF L2
+        unique_id: unique_id__em540_pf_l2
+        unit_of_measurement: ""
+        state_class: measurement
+        device_class: power_factor
+        slave: 1
+        address: 0x002F
+        data_type: int16
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 PF L3
+        unique_id: unique_id__em540_pf_l3
+        unit_of_measurement: ""
+        state_class: measurement
+        device_class: power_factor
+        slave: 1
+        address: 0x0030
+        data_type: int16
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+        #
+
+      - name: Torfahrtsschuppen SmartMeter EM540 PF sys
+        unique_id: unique_id__em540_pf_sys
+        unit_of_measurement: ""
+        state_class: measurement
+        device_class: power_factor
+        slave: 1
+        address: 0x0031
+        data_type: int16
+        scale: 0.001
+        precision: 3
+        scan_interval: 15
+
+      ##########################################################################
+      # Frequency
+
+      - name: Torfahrtsschuppen SmartMeter EM540 Hz
+        unique_id: unique_id__em540_hz
+        unit_of_measurement: Hz
+        state_class: measurement
+        device_class: frequency
+        slave: 1
+        address: 0x0033
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      ##########################################################################
+      # Energy
+
+      - name: Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) L1
+        unique_id: unique_id__em540_kwh_l1
+        unit_of_measurement: kWh
+        state_class: total_increasing
+        device_class: energy
+        slave: 1
+        address: 0x0040
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) L2
+        unique_id: unique_id__em540_kwh_l2
+        unit_of_measurement: kWh
+        state_class: total_increasing
+        device_class: energy
+        slave: 1
+        address: 0x0042
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) L3
+        unique_id: unique_id__em540_kwh_l3
+        unit_of_measurement: kWh
+        state_class: total_increasing
+        device_class: energy
+        slave: 1
+        address: 0x0044
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 kWh+ (imported) total
+        unique_id: unique_id__em540_kwh_imported_total
+        unit_of_measurement: kWh
+        state_class: total_increasing
+        device_class: energy
+        slave: 1
+        address: 0x0034
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15
+
+      - name: Torfahrtsschuppen SmartMeter EM540 kWh- (exported) total
+        unique_id: unique_id__em540_kwh_exported_total
+        unit_of_measurement: kWh
+        state_class: total_increasing
+        device_class: energy
+        slave: 1
+        address: 0x004E
+        data_type: int32
+        swap: word
+        scale: 0.1
+        precision: 1
+        scan_interval: 15

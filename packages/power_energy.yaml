@@ -1,0 +1,26 @@
+powercalc:
+  create_energy_sensors: true
+  create_utility_meters: false
+
+  sensors:
+    - entity_id: light.vorbau_hoflicht
+      fixed:
+        power: 11.5
+
+    - entity_id: light.haus_uv_astra_flur_unten_deckenlicht
+      name: Haus UV Astra Flur unten Deckenlicht
+      fixed:
+        power: 15
+
+    - entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+      name: Haus UV Astra Flur oben Deckenlicht
+      fixed:
+        power: 17.5
+
+    - entity_id: switch.dachboden_10ktl_lueftung
+      fixed:
+        power: 8
+
+    - entity_id: switch.torfahrtsschuppen_zk_astra_technikraum_lueftung
+      fixed:
+        power: 12

@@ -1,0 +1,27 @@
+template:
+  - sensor:
+      - name: Torfahrtsschuppen ZR-Zaehler mMe4.0 Nummer
+        unique_id: unique_id__zr_zaehler_nummer
+        icon: mdi:meter-electric-outline
+        # state: "1EMH0012756056" # Alter Zähler, Wechsel 2025-11-24
+        state: "1DZG0040345374" # Neuer Zähler, Wechsel 2025-11-24
+
+      - name: Torfahrtsschuppen ZR-Zaehler mMe4.0 Stand 1.8.0 (SB) Bezug
+        unique_id: unique_id__zr_zaehler_bezug
+        icon: mdi:meter-electric-outline
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >
+          {{ states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total') }}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total') }}
+
+      - name: Torfahrtsschuppen ZR-Zaehler mMe4.0 Stand 2.8.0 (SL) Lieferung Einspeisung
+        unique_id: unique_id__zr_zaehler_einspeisung
+        icon: mdi:meter-electric-outline
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >
+          {{ states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') }}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') }}

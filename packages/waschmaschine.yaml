@@ -1,0 +1,78 @@
+input_select:
+  waschmaschine_opstate:
+    name: Waschmaschine OpState
+    icon: mdi:washing-machine
+    options:
+      - "Off"
+      #- "Standby"
+      - "Active"
+      - "Finished"
+    initial: "Off"
+
+automation:
+  - id: "1609362853002"
+    alias: Waschmaschine StateMachine zu Active
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.keller_waschmaschine_shp5_energy_power
+        above: 30
+        for:
+          seconds: 30
+    condition:
+      condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.waschmaschine_opstate
+          state: "Active"
+    action:
+      - action: input_select.select_option
+        data:
+          entity_id: input_select.waschmaschine_opstate
+          option: "Active"
+
+  - id: "1609362853005"
+    alias: Waschmaschine StateMachine Übergang zu Finished
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.keller_waschmaschine_shp5_energy_power
+        below: 2
+        for:
+          minutes: 5
+    condition:
+      - condition: state
+        entity_id: input_select.waschmaschine_opstate
+        state:
+          - "Active"
+    action:
+      - action: input_select.select_option
+        data:
+          entity_id: input_select.waschmaschine_opstate
+          option: "Finished"
+
+  - id: "1609362853003"
+    alias: Waschmaschine StateMachine zu Off nach einer Stunde in Finished
+    trigger:
+      - trigger: state
+        entity_id: input_select.waschmaschine_opstate
+        to: "Finished"
+        for:
+          hours: 1
+          minutes: 30
+    action:
+      - action: input_select.select_option
+        data:
+          entity_id: input_select.waschmaschine_opstate
+          option: "Off"
+
+  ##############################################################################
+
+  - id: "1609362853004"
+    alias: Waschmaschine fertig Benachrichtigung
+    trigger:
+      - trigger: state
+        entity_id: input_select.waschmaschine_opstate
+        to: "Finished"
+    action:
+      - action: notify.persistent_notification
+        data:
+          message: Waschmaschine fertig!

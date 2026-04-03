@@ -1,0 +1,78 @@
+template:
+  - sensor:
+
+      - name: Irene PV Produktion v2 (home + battery + export)
+        unique_id: unique_id__irene_pv_produktion_v2
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:solar-power-variant
+        state: >-
+          {% set home_from_pv = states('sensor.kostal_plenticore_scb_home_power_from_pv') | float(0) %}
+          {% set battery_from_pv = states('sensor.kostal_plenticore_scb_pv_to_battery_power') | float(0) %}
+          {% set grid_power = states('sensor.kostal_plenticore_scb_grid_power') | float(0) %}
+          {% set grid_export = (-1) * grid_power if grid_power < 0 else 0.0 %}
+          {{ home_from_pv + battery_from_pv + grid_export }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_home_power_from_pv') and has_value('sensor.kostal_plenticore_scb_pv_to_battery_power') and has_value('sensor.kostal_plenticore_scb_grid_power') }}
+
+      - name: Irene PV Produktion v4b (dc1 + dc2 * efficiency)
+        unique_id: unique_id__irene_pv_produktion_v4b
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:solar-power-variant
+        state: >-
+          {% set dc1_power = states('sensor.kostal_plenticore_scb_dc1_power') | float(0) %}
+          {% set dc2_power = states('sensor.kostal_plenticore_scb_dc2_power') | float(0) %}
+          {{ ((dc1_power + dc2_power) * 0.965) | round(1) }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_dc1_power') and has_value('sensor.kostal_plenticore_scb_dc2_power') }}
+
+      - name: Irene PV Export
+        unique_id: unique_id__irene_pv_export
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:transmission-tower-export
+        state: >-
+          {% set grid_power = states('sensor.kostal_plenticore_scb_grid_power') | float(0) %}
+          {{ (-1) * grid_power if grid_power < 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_grid_power') }}
+
+      - name: Irene PV Import
+        unique_id: unique_id__irene_pv_import
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:transmission-tower-import
+        state: >-
+          {% set grid_power = states('sensor.kostal_plenticore_scb_grid_power') | float(0) %}
+          {{ grid_power if grid_power > 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_grid_power') }}
+
+      - name: Irene PV Batterie Ladung
+        unique_id: unique_id__irene_pv_battery_charging
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:battery-arrow-up-outline
+        state: >-
+          {% set battery_power = states('sensor.kostal_plenticore_scb_battery_power') | float(0) %}
+          {{ (-1) * battery_power if battery_power < 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_battery_power') }}
+
+      - name: Irene PV Batterie Entladung
+        unique_id: unique_id__irene_pv_battery_discharging
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:battery-arrow-down-outline
+        state: >-
+          {% set battery_power = states('sensor.kostal_plenticore_scb_battery_power') | float(0) %}
+          {{ battery_power if battery_power > 0 else 0.0 }}
+        availability: >-
+          {{ has_value('sensor.kostal_plenticore_scb_battery_power') }}

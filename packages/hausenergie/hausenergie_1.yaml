@@ -1,0 +1,65 @@
+template:
+  - trigger:
+      - trigger: state
+        entity_id: sensor.torfahrtsschuppen_smartmeter_em540_w_sys
+    # Haushaltsleistung synchron mit Wechselrichter-Updates
+    sensor:
+      - name: Torfahrtsschuppen Haushaltsleistung
+        unique_id: unique_id__house_gross_power
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:home-lightning-bolt-outline
+        state: >-
+          {% set inverter_active_power = states('sensor.dachboden_10ktl_active_power') | float(0) %}
+          {% set smartmeter_active_power = states('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') | float(0) %}
+          {# Hausverbrauch ergibt sich aus Produktion + Import - Export (em540_w_sys beschreibt bereits die Summe beider) #}
+          {% set house_power = (inverter_active_power + smartmeter_active_power) | float(0) | round(1) %}
+          {{ house_power }}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') and has_value('sensor.dachboden_10ktl_active_power') }}
+
+      - name: Torfahrtsschuppen Photovoltaik Leistung Eigenverbrauch
+        unique_id: unique_id__solar_self_power
+        state_class: measurement
+        device_class: power
+        unit_of_measurement: "W"
+        icon: mdi:home-lightning-bolt-outline
+        state: >-
+          {% set inverter_active_power = states('sensor.dachboden_10ktl_active_power') | float(0) %}
+          {% set smartmeter_active_power = states('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') | float(0) %}
+          {# Eigenverbrauch der Wechselrichter Leistung verringert sich um den Export Anteil von em540_w_sys (negativ) #}
+          {% set export_power = (-1) * smartmeter_active_power if smartmeter_active_power < 0 else 0.0 %}
+          {{ inverter_active_power - export_power }}
+        availability: >-
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_sys') and has_value('sensor.dachboden_10ktl_active_power') }}
+
+      #
+
+  - sensor:
+      - name: Torfahrtsschuppen Haushaltsverbrauch total
+        unique_id: unique_id__house_consumption_energy_total
+        state_class: "total"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        icon: "mdi:solar-power"
+        state: >-
+          {% set inv_prod = states('sensor.dachboden_10ktl_total_yield_tare') | float(0) %}
+          {% set grid_import = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total') | float(0) %}
+          {% set grid_export = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') | float(0) %}
+          {{ inv_prod + grid_import - grid_export }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_total_yield_tare') and has_value('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_total') and has_value('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') }}
+
+      - name: Torfahrtsschuppen Photovoltaik Energie Eigenverbrauch total
+        unique_id: unique_id__solar_self_energy_total
+        state_class: "total"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        icon: "mdi:solar-power"
+        state: >-
+          {% set inv_prod = states('sensor.dachboden_10ktl_total_yield_tare') | float(0) %}
+          {% set grid_export = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') | float(0) %}
+          {{ inv_prod - grid_export }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_total_yield_tare') and has_value('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_total') }}

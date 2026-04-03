@@ -1,0 +1,101 @@
+input_number:
+  energienetz_import_preis_rate:
+    name: Energieversorger Bezugspreis Rate
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+    initial: 0.2918
+    min: 0
+    max: 9
+    step: 0.0001
+    mode: box
+
+    # Vertrag: 29,18 ct/kWh, 159,23€ pro Jahr
+
+  energienetz_export_preis_rate:
+    name: Energieversorger Einspeisevergütung Rate
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+    initial: 0.082
+    min: 0
+    max: 9
+    step: 0.0001
+    mode: box
+
+template:
+  - sensor:
+      - name: Energienetz Import Preis Rate
+        unique_id: unique_id__monetary_import_price_rate
+        device_class: "monetary"
+        unit_of_measurement: "€/kWh"
+        state: >-
+          {{ states('input_number.energienetz_import_preis_rate') | float(0) }}
+
+      - name: Energienetz Export Preis Rate
+        unique_id: unique_id__monetary_export_price_rate
+        device_class: "monetary"
+        unit_of_measurement: "€/kWh"
+        state: >-
+          {{ states('input_number.energienetz_export_preis_rate') | float(0) }}
+
+      - name: Energiekosten Import daily
+        unique_id: unique_id__monetary_import_daily
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set kwh_imported_daily = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_daily') | float(0) %}
+          {% set pricerate_import = states('sensor.energienetz_import_preis_rate') | float(0) %}
+          {{ (kwh_imported_daily * pricerate_import) | round(2) }}
+
+      - name: Energiekosten Import theoretisch ohne PV daily
+        unique_id: unique_id__monetary_import_theoretical_without_pv_daily
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set kwh_energy_consumed_daily = states('sensor.torfahrtsschuppen_haushaltsverbrauch_daily') | float(0) %}
+          {% set pricerate_import = states('sensor.energienetz_import_preis_rate') | float(0) %}
+          {{ (kwh_energy_consumed_daily * pricerate_import) | round(2) }}
+
+      - name: Energiekosten Export daily
+        unique_id: unique_id__monetary_export_daily
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set kwh_exported_daily = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_daily') | float(0) %}
+          {% set pricerate_export = states('sensor.energienetz_export_preis_rate') | float(0) %}
+          {{ (kwh_exported_daily * pricerate_export) | round(2) }}
+
+      - name: Energiekosten Selbstversorgungseinsparung daily
+        unique_id: unique_id__monetary_autonomy_saving
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set inv_self_use_daily = states('sensor.torfahrtsschuppen_photovoltaik_energie_eigenverbrauch_daily') | float(0) %}
+          {% set pricerate_import = states('sensor.energienetz_import_preis_rate') | float(0) %}
+          {% set pricerate_export = states('sensor.energienetz_export_preis_rate') | float(0) %}
+          {{ (inv_self_use_daily * (pricerate_import - pricerate_export)) | round(2) }}
+
+      - name: Energiekosten Bilanz daily
+        unique_id: unique_id__monetary_profit
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set kwh_imported_daily = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_imported_daily') | float(0) %}
+          {% set kwh_exported_daily = states('sensor.torfahrtsschuppen_smartmeter_em540_kwh_exported_daily') | float(0) %}
+          {% set pricerate_import = states('sensor.energienetz_import_preis_rate') | float(0) %}
+          {% set pricerate_export = states('sensor.energienetz_export_preis_rate') | float(0) %}
+          {{ (kwh_exported_daily * pricerate_export - kwh_imported_daily * pricerate_import) | round(2) }}
+
+      - name: Energiekosten Mehrwert PV Gewinn daily
+        unique_id: unique_id__monetary_pv_benefit
+        state_class: "total"
+        device_class: "monetary"
+        unit_of_measurement: "€"
+        state: >-
+          {% set revenue_export = states('sensor.energiekosten_export_daily') | float(0) %}
+          {% set saving_import = states('sensor.energiekosten_selbstversorgungseinsparung_daily') | float(0) %}
+          {{ (revenue_export + saving_import) | round(2) }}

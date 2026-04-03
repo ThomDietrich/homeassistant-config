@@ -1,0 +1,25 @@
+template:
+  - trigger:
+      - trigger: state
+        entity_id: sensor.torfahrtsschuppen_smartmeter_em540_w_exported
+      - trigger: state
+        entity_id: sensor.solcast_awf1877s_prognose_nachste_stunde
+    sensor:
+      - name: PV Ueberschuss fuer Waschmaschine ausreichend
+        unique_id: unique_id__pv_ueberschuss_waschmaschine_pct
+        icon: mdi:solar-power-variant-outline
+        unit_of_measurement: "%"
+        state: >
+          {%- set w_ueberschuss = states('sensor.torfahrtsschuppen_smartmeter_em540_w_exported') | int(0) -%}
+          {%- set kwh_vorhersage = states('sensor.solcast_awf1877s_prognose_nachste_stunde') | float(0) -%}
+          {%- set factor = min(1.0, w_ueberschuss / 2300) -%}
+          {%- set pct = 100 * (kwh_vorhersage / 1.8) * factor -%}
+          {% if pct > 100 %}
+            {{ pct | round(0) }}
+          {% elif pct < 0 %}
+            0.0
+          {% else %}
+            {{ pct | round(0) }}
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.torfahrtsschuppen_smartmeter_em540_w_exported') and has_value('sensor.solcast_awf1877s_prognose_nachste_stunde') }}

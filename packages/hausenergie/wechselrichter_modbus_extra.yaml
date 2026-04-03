@@ -1,0 +1,145 @@
+input_number:
+  dachboden_solar_area:
+    name: Dachboden Solaranalage Gesamtfläche
+    unit_of_measurement: "m²"
+    icon: mdi:texture-box
+    min: 0
+    max: 999
+    #step: 0.1
+    initial: 42.9 # 0.182 * 0.091 * 108 * 24
+    mode: box
+
+template:
+  - sensor:
+      # Tarierte Produktion
+      # Der Zweienergierichtungszähler wurde am 31. Juli 2023 verbaut
+      # Sowohl Zähler als auch SmartMeter laufen ab diesem Tag startend bei 0.0 kWh +/-
+      - name: Dachboden 10KTL Total yield tare
+        unique_id: unique_id__dachboden_10ktl_total_yield_tare
+        state_class: "total"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        icon: "mdi:lightning-bolt-outline"
+        state: >-
+          {% set total_20230731 = 178.48 %}
+          {% set total_20251124 = 28115.45 %}
+          {{ (states('sensor.dachboden_10ktl_total_yield') | float(0) - total_20251124) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_total_yield') }}
+
+      # Moduleffizienz
+
+      - name: Dachboden Solaranalage Moduleffizienz
+        unique_id: unique_id__solar_modules_efficiency_weather_station
+        # state_class: measurement
+        unit_of_measurement: "%"
+        icon: mdi:percent-circle-outline
+        state: >-
+          {% set modules_count = 24 %}
+          {% set area = 0.182 * 0.091 * 108 * modules_count %}
+          {% set radiation = states('sensor.weather_station_radiation_wpm2') | float(0) %}
+          {% set modules_production = states('sensor.dachboden_10ktl_active_power') | float(0) %}
+          {% set inv_efficiency = states('sensor.dachboden_10ktl_efficiency') | float(0) / 100 %}
+          {% set modules_radiation = radiation * area %}
+          {% if modules_radiation > 0 %}
+            {{ (modules_production / modules_radiation * 100 * inv_efficiency) | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+        availability: >-
+          {{ has_value('sensor.weather_station_radiation_wpm2') and has_value('sensor.dachboden_10ktl_active_power') and states('sensor.dachboden_10ktl_efficiency') != "unavailable" }}
+
+      # Phasenleistung
+
+      - name: Dachboden 10KTL Phase A power
+        unique_id: unique_id__dachboden_10ktl_phase_a_active_power
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set voltage = states('sensor.dachboden_10ktl_phase_a_voltage') | float(0) %}
+          {% set current = states('sensor.dachboden_10ktl_phase_a_current') | float(0) %}
+          {{ (voltage * current) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_phase_a_voltage') and has_value('sensor.dachboden_10ktl_phase_a_current') }}
+
+      - name: Dachboden 10KTL Phase B power
+        unique_id: unique_id__dachboden_10ktl_phase_b_active_power
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set voltage = states('sensor.dachboden_10ktl_phase_b_voltage') | float(0) %}
+          {% set current = states('sensor.dachboden_10ktl_phase_b_current') | float(0) %}
+          {{ (voltage * current) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_phase_b_voltage') and has_value('sensor.dachboden_10ktl_phase_b_current') }}
+
+      - name: Dachboden 10KTL Phase C power
+        unique_id: unique_id__dachboden_10ktl_phase_c_active_power
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set voltage = states('sensor.dachboden_10ktl_phase_c_voltage') | float(0) %}
+          {% set current = states('sensor.dachboden_10ktl_phase_c_current') | float(0) %}
+          {{ (voltage * current) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_phase_c_voltage') and has_value('sensor.dachboden_10ktl_phase_c_current') }}
+
+      - name: Dachboden 10KTL PV 1 Power
+        unique_id: unique_id__dachboden_10ktl_pv_1_power
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set voltage = states('sensor.dachboden_10ktl_pv_1_voltage') | float(0) %}
+          {% set current = states('sensor.dachboden_10ktl_pv_1_current') | float(0) %}
+          {{ (voltage * current) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_pv_1_voltage') and has_value('sensor.dachboden_10ktl_pv_1_current') }}
+
+      - name: Dachboden 10KTL PV 2 Power
+        unique_id: unique_id__dachboden_10ktl_pv_2_power
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set voltage = states('sensor.dachboden_10ktl_pv_2_voltage') | float(0) %}
+          {% set current = states('sensor.dachboden_10ktl_pv_2_current') | float(0) %}
+          {{ (voltage * current) | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_pv_2_voltage') and has_value('sensor.dachboden_10ktl_pv_2_current') }}
+
+      # Modulleistung
+
+      - name: Dachboden 10KTL Input power per module
+        unique_id: unique_id__dachboden_10ktl_input_power_per_module
+        state_class: "measurement"
+        device_class: "power"
+        unit_of_measurement: "W"
+        icon: "mdi:flash"
+        state: >-
+          {% set active_power = states('sensor.dachboden_10ktl_input_power') | float(0) %}
+          {{ (active_power / 24) | round(1) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_input_power') }}
+
+      # String-Differenz
+
+      - name: Dachboden 10KTL PV1/2 Leistungsdifferenz
+        unique_id: unique_id__dachboden_10ktl_pv12_diff_w
+        state_class: measurement
+        unit_of_measurement: "W"
+        icon: mdi:vector-difference
+        state: >-
+          {% set pv_1_w = states('sensor.dachboden_10ktl_pv_1_power') | float(0) %}
+          {% set pv_2_w = states('sensor.dachboden_10ktl_pv_2_power') | float(0) %}
+          {{ (pv_1_w - pv_2_w) | abs | round(2) }}
+        availability: >-
+          {{ has_value('sensor.dachboden_10ktl_pv_1_power') and has_value('sensor.dachboden_10ktl_pv_2_power') }}
