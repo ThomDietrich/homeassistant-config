@@ -1,55 +1,55 @@
 automation:
-  - alias: Heizungsregelung ESP32 nicht verfügbar
+  - alias: Keller ZH ESP32 nicht verfügbar
     mode: restart
     trigger:
       - trigger: state
-        entity_id: binary_sensor.heizungsregelung_esp_device_status
+        entity_id: binary_sensor.keller_zh_regelung_esp_device_status
         to: "off"
         for:
           minutes: 10
       - trigger: state
-        entity_id: binary_sensor.heizungsregelung_esp_device_status
+        entity_id: binary_sensor.keller_zh_regelung_esp_device_status
         to: "off"
         for:
           minutes: 60
     action:
       - action: script.notify_warnung
         data:
-          msg_title: "AWF1877 Heizungsregelung Gerätewarnung"
+          msg_title: "AWF1877 Keller ZH Gerätewarnung"
           msg_text: "ESP32 nicht mehr im Netzwerk verfügbar. Bitte prüfen."
 
-  - alias: Heizungsregelung Sensorwarnung
+  - alias: Keller ZH Sensorwarnung
     trigger:
       - trigger: state
-        entity_id: sensor.heizungsregelung_sonnenkollektor
+        entity_id: sensor.keller_zh_solarthermie_kollektortemperatur
         to:
           - "unknown"
           - "unavailable"
         for:
           minutes: 10
       - trigger: state
-        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        entity_id: sensor.keller_zh_warmwasserspeicher_temperatur_unten
         to:
           - "unknown"
           - "unavailable"
         for:
           minutes: 10
       - trigger: state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         to:
           - "unknown"
           - "unavailable"
         for:
           minutes: 10
       - trigger: state
-        entity_id: sensor.heizungsregelung_kessel_vorlauf
+        entity_id: sensor.keller_zh_kessel_vorlauftemperatur
         to:
           - "unknown"
           - "unavailable"
         for:
           minutes: 10
       - trigger: state
-        entity_id: sensor.heizungsregelung_kessel_ruecklauf
+        entity_id: sensor.keller_zh_kessel_ruecklauftemperatur
         to:
           - "unknown"
           - "unavailable"
@@ -72,26 +72,26 @@ automation:
     action:
       - action: script.notify_warnung
         data:
-          msg_title: "AWF1877 Heizungsregelung Sensorwarnung"
+          msg_title: "AWF1877 Keller ZH Sensorwarnung"
           msg_text: "Problem mit Sensor '{{ trigger.entity_id }}' (={{ trigger.to_state.state }}). Bitte prüfen."
 
-  - alias: Heizungsregelung Warmwassertemperatur gering
+  - alias: Keller ZH Warmwassertemperatur gering
     trigger:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_warmwasserspeicher_oben
+        entity_id: sensor.keller_zh_warmwasserspeicher_temperatur_oben
         below: 33
         for:
           hours: 3
     action:
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Warmwassertemperatur ungewöhnlich niedrig ({{ trigger.to_state.state }} °C). Bitte prüfen."
 
-  - alias: Heizungsregelung Heizkreis Rücklauftemperatur gering
+  - alias: Keller ZH Heizkreis Rücklauftemperatur gering
     trigger:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_heizkreis_ruecklauf
+        entity_id: sensor.keller_zh_heizkreis_ruecklauftemperatur
         below: 20
         for:
           minutes: 15
@@ -109,5 +109,5 @@ automation:
     action:
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Heizkreis Rücklauftemperatur ungewöhnlich niedrig ({{ trigger.to_state.state }} °C) bei geringer Außentemperatur (oder wenn Wetterstation nicht verfügbar). Bitte prüfen."

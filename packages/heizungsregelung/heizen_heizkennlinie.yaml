@@ -1,68 +1,68 @@
 input_boolean:
-  heizungsregelung_heizung_automation:
-    name: Heizungsregelung Heizung Automatisierung
+  keller_zh_heizung_automation:
+    name: Keller ZH Heizung Automatisierung
     icon: mdi:robot-industrial
 
 input_datetime:
-  heizungsregelung_heizung_absenkung_nacht_ende:
-    name: Heizungsregelung Heizung Nachtabsenkung Ende
+  keller_zh_heizung_absenkung_nacht_ende:
+    name: Keller ZH Heizung Nachtabsenkung Ende
     has_date: false
     has_time: true
-    #initial: "07:00"
-  heizungsregelung_heizung_absenkung_tag_start:
-    name: Heizungsregelung Heizung Tagesabsenkung Start
+    initial: "09:00"
+  keller_zh_heizung_absenkung_tag_start:
+    name: Keller ZH Heizung Tagesabsenkung Start
     has_date: false
     has_time: true
-    #initial: "10:00"
-  heizungsregelung_heizung_absenkung_tag_ende:
-    name: Heizungsregelung Heizung Tagesabsenkung Ende
+    initial: "11:00"
+  keller_zh_heizung_absenkung_tag_ende:
+    name: Keller ZH Heizung Tagesabsenkung Ende
     has_date: false
     has_time: true
-    #initial: "18:00"
-  heizungsregelung_heizung_absenkung_nacht_start:
-    name: Heizungsregelung Heizung Nachtabsenkung Start
+    initial: "17:00"
+  keller_zh_heizung_absenkung_nacht_start:
+    name: Keller ZH Heizung Nachtabsenkung Start
     has_date: false
     has_time: true
-    #initial: "22:00"
+    initial: "23:00"
 
 input_number:
-  heizungsregelung_heizung_absenkung_tag:
-    name: Heizungsregelung Heizung Absenkung Tag
+  keller_zh_heizung_absenkung_tag:
+    name: Keller ZH Heizung Absenkung Tag
     unit_of_measurement: "°C"
     icon: mdi:thermometer-chevron-down
     min: 0
     max: 15
     step: 0.5
-    #initial: 10
+    initial: 15
     mode: box
 
-  heizungsregelung_heizung_absenkung_nacht:
-    name: Heizungsregelung Heizung Absenkung Nacht
+  keller_zh_heizung_absenkung_nacht:
+    name: Keller ZH Heizung Absenkung Nacht
     unit_of_measurement: "°C"
     icon: mdi:thermometer-chevron-down
     min: 0
     max: 25
     step: 0.5
-    #initial: 10
+    initial: 17
     mode: box
 
-  heizungsregelung_heizung_heizkennlinie_offset:
-    name: Heizungsregelung Heizung Heizkennlinie Parallelverschiebung
+  keller_zh_heizung_heizkennlinie_offset:
+    name: Keller ZH Heizung Heizkennlinie Parallelverschiebung
     unit_of_measurement: "°C"
     icon: mdi:thermometer-plus
     min: 0
     max: 35
     step: 0.1
-    #initial: 0
+    initial: 5.5
     mode: box
 
 ################################################################################
 
 sensor:
   - platform: statistics
-    name: Heizungsregelung Heizkreis Volumenstrom Mittelwert
-    unique_id: unique_id__heizungsregelung_heizkreis_volumenstrom_mittelwert
-    entity_id: sensor.heizungsregelung_heizkreis_volumenstrom
+    name: Keller ZH Heizkreis Volumenstrom Mittelwert
+    unique_id: unique_id__keller_zh_heizkreis_volumenstrom_mittelwert
+    entity_id: sensor.keller_zh_heizkreis_volumenstrom
     state_characteristic: mean
     max_age:
       minutes: 10
@@ -72,13 +72,13 @@ sensor:
 
 template:
   - sensor:
-      - name: Heizungsregelung Heizkreis Volumenstrom Heizkennlinie Korrektur
-        unique_id: unique_id__heizungsregelung_heizkreis_volumenstrom_heizkennlinie_korrektur
+      - name: Keller ZH Heizkreis Volumenstrom Heizkennlinie Korrektur
+        unique_id: unique_id__keller_zh_heizkreis_volumenstrom_heizkennlinie_korrektur
         unit_of_measurement: "K"
         icon: mdi:thermometer-plus
         # state_class: measurement
         state: >
-          {% set v = states('sensor.heizungsregelung_heizkreis_volumenstrom_mittelwert') | float(0) %}
+          {% set v = states('sensor.keller_zh_heizkreis_volumenstrom_mittelwert') | float(0) %}
           {% set v1 = 0 %}
           {% set k1 = -6 %}
           {% set v2 = 12 %}
@@ -87,27 +87,27 @@ template:
           {% set n = k1 - m * v1 %}
           {{ (m * v + n) | round(1) }}
         availability: >
-          {{ has_value('sensor.heizungsregelung_heizkreis_volumenstrom_mittelwert') }}
+          {{ has_value('sensor.keller_zh_heizkreis_volumenstrom_mittelwert') }}
 
-      # - name: Heizungsregelung Heizkreis Temperaturdifferenz
-      #   unique_id: uniqueid__heizungsregelung_heizkreis_temperaturdifferenz
+      # - name: Keller ZH Heizkreis Temperaturdifferenz
+      #   unique_id: uniqueid__keller_zh_heizkreis_temperaturdifferenz
       #   unit_of_measurement: "K"
       #   state_class: measurement
       #   device_class: temperature
       #   state: >
-      #     {% set vorlauf = states('sensor.heizungsregelung_heizkreis_vorlauf') | float(0) %}
-      #     {% set ruecklauf = states('sensor.heizungsregelung_heizkreis_ruecklauf') | float(0) %}
+      #     {% set vorlauf = states('sensor.keller_zh_heizkreis_vorlauf') | float(0) %}
+      #     {% set ruecklauf = states('sensor.keller_zh_heizkreis_ruecklauf') | float(0) %}
       #     {{ (vorlauf - ruecklauf) | round(1, default=0) }}
       #   availability: >
-      #     {{ states('sensor.heizungsregelung_heizkreis_vorlauf') not in [ 'unavailable', 'none', 'unknown' ] and states('sensor.heizungsregelung_heizkreis_ruecklauf') not in [ 'unavailable', 'none', 'unknown' ] }}
+      #     {{ states('sensor.keller_zh_heizkreis_vorlauf') not in [ 'unavailable', 'none', 'unknown' ] and states('sensor.keller_zh_heizkreis_ruecklauf') not in [ 'unavailable', 'none', 'unknown' ] }}
       #   attributes:
       #     vorlauf_temperatur: >
-      #       {{ states('sensor.heizungsregelung_heizkreis_vorlauf') | float(0) | round(2) }}
+      #       {{ states('sensor.keller_zh_heizkreis_vorlauf') | float(0) | round(2) }}
       #     ruecklauf_temperatur: >
-      #       {{ states('sensor.heizungsregelung_heizkreis_ruecklauf') | float(0) | round(2) }}
+      #       {{ states('sensor.keller_zh_heizkreis_ruecklauf') | float(0) | round(2) }}
 
-      - name: Heizungsregelung Heizung Heizkennlinie theoretisch
-        unique_id: unique_id__heizungsregelung_heizung_heizkennlinie_theoretisch
+      - name: Keller ZH Heizung Heizkennlinie theoretisch
+        unique_id: unique_id__keller_zh_heizung_heizkennlinie_theoretisch
         unit_of_measurement: "°C"
         # state_class: measurement
         state: >
@@ -125,29 +125,29 @@ template:
         entity_id:
           - sensor.weather_station_windchill_c
           - sensor.pferdestall_temperature
-          - input_boolean.heizungsregelung_heizung_automation
-          - input_number.heizungsregelung_heizung_heizkennlinie_offset
-          - input_number.heizungsregelung_heizung_absenkung_tag
-          - input_number.heizungsregelung_heizung_absenkung_nacht
+          - input_boolean.keller_zh_heizung_automation
+          - input_number.keller_zh_heizung_heizkennlinie_offset
+          - input_number.keller_zh_heizung_absenkung_tag
+          - input_number.keller_zh_heizung_absenkung_nacht
     sensor:
-      - name: Heizungsregelung Heizung Heizkennlinie Sollwert
-        unique_id: unique_id__heizungsregelung_heizung_heizkennlinie_sollwert
+      - name: Keller ZH Heizung Heizkennlinie Sollwert
+        unique_id: unique_id__keller_zh_heizung_heizkennlinie_sollwert
         unit_of_measurement: "°C"
         # state_class: measurement
         state: >
-          {% set t = states('sensor.heizungsregelung_heizung_heizkennlinie_theoretisch') | float(0) %}
-          {% set offset = states('input_number.heizungsregelung_heizung_heizkennlinie_offset') | float(0) %}
+          {% set t = states('sensor.keller_zh_heizung_heizkennlinie_theoretisch') | float(0) %}
+          {% set offset = states('input_number.keller_zh_heizung_heizkennlinie_offset') | float(0) %}
           {##}
-          {% set absenkung_tag = states('input_number.heizungsregelung_heizung_absenkung_tag') | float(0) %}
-          {% set absenkung_nacht = states('input_number.heizungsregelung_heizung_absenkung_nacht') | float(0) %}
+          {% set absenkung_tag = states('input_number.keller_zh_heizung_absenkung_tag') | float(0) %}
+          {% set absenkung_nacht = states('input_number.keller_zh_heizung_absenkung_nacht') | float(0) %}
           {##}
-          {% set absenkung_tag_start = today_at(states('input_datetime.heizungsregelung_heizung_absenkung_tag_start')) %}
-          {% set absenkung_tag_ende = today_at(states('input_datetime.heizungsregelung_heizung_absenkung_tag_ende')) %}
-          {% set absenkung_nacht_start = today_at(states('input_datetime.heizungsregelung_heizung_absenkung_nacht_start')) %}
-          {% set absenkung_nacht_ende = today_at(states('input_datetime.heizungsregelung_heizung_absenkung_nacht_ende')) %}
+          {% set absenkung_tag_start = today_at(states('input_datetime.keller_zh_heizung_absenkung_tag_start')) %}
+          {% set absenkung_tag_ende = today_at(states('input_datetime.keller_zh_heizung_absenkung_tag_ende')) %}
+          {% set absenkung_nacht_start = today_at(states('input_datetime.keller_zh_heizung_absenkung_nacht_start')) %}
+          {% set absenkung_nacht_ende = today_at(states('input_datetime.keller_zh_heizung_absenkung_nacht_ende')) %}
           {##}
 
-          {% set volumenstrom_korrektur = states('sensor.heizungsregelung_heizkreis_volumenstrom_heizkennlinie_korrektur') | float(0) %}
+          {% set volumenstrom_korrektur = states('sensor.keller_zh_heizkreis_volumenstrom_heizkennlinie_korrektur') | float(0) %}
           {##}
           {% if now() < absenkung_nacht_ende or now() > absenkung_nacht_start %}
             {{ (t + offset - absenkung_nacht) | round(1) }}
@@ -157,43 +157,43 @@ template:
             {{ (t + offset + volumenstrom_korrektur) | round(1) }}
           {% endif %}
         availability: >
-          {{ has_value('sensor.heizungsregelung_heizung_heizkennlinie_theoretisch') }}
+          {{ has_value('sensor.keller_zh_heizung_heizkennlinie_theoretisch') }}
 
 ################################################################################
 
 automation:
-  - alias: Heizungsregelung Heizung folgt Heizkennlinie
+  - alias: Keller ZH Heizung folgt Heizkennlinie
     mode: restart
     max_exceeded: silent
     trigger:
       - trigger: state
-        entity_id: sensor.heizungsregelung_heizung_heizkennlinie_sollwert
+        entity_id: sensor.keller_zh_heizung_heizkennlinie_sollwert
       - trigger: state
-        entity_id: sensor.heizungsregelung_gastherme_kreislauf
+        entity_id: sensor.keller_zh_gastherme_kreislauf
       - trigger: state
-        entity_id: input_boolean.heizungsregelung_heizung_automation
+        entity_id: input_boolean.keller_zh_heizung_automation
         to: "on"
     condition:
       - alias: "Automation aktiv"
         condition: state
-        entity_id: input_boolean.heizungsregelung_heizung_automation
+        entity_id: input_boolean.keller_zh_heizung_automation
         state: "on"
       - alias: "Gastherme nicht in Warmwasserbereitung"
         condition: state
-        entity_id: sensor.heizungsregelung_gastherme_kreislauf
-        state: "Heizung"
+        entity_id: sensor.keller_zh_gastherme_kreislauf
+        state: "Heizen"
     action:
       - action: input_number.set_value
         data:
-          entity_id: input_number.heizungsregelung_gastherme_sollwert_temperatur
-          value: "{{ states('sensor.heizungsregelung_heizung_heizkennlinie_sollwert') | float(0) }}"
+          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
+          value: "{{ states('sensor.keller_zh_heizung_heizkennlinie_sollwert') | float(0) }}"
 
-  - alias: Heizungsregelung Heizung folgt Heizkennlinie (Fehlerfall)
+  - alias: Keller ZH Heizung folgt Heizkennlinie (Fehlerfall)
     mode: restart
     max_exceeded: silent
     trigger:
       - trigger: state
-        entity_id: sensor.heizungsregelung_heizung_heizkennlinie_sollwert
+        entity_id: sensor.keller_zh_heizung_heizkennlinie_sollwert
         to:
           - "unknown"
           - "unavailable"
@@ -202,18 +202,18 @@ automation:
     condition:
       - alias: "Automation aktiv"
         condition: state
-        entity_id: input_boolean.heizungsregelung_heizung_automation
+        entity_id: input_boolean.keller_zh_heizung_automation
         state: "on"
       - alias: "Gastherme nicht in Warmwasserbereitung"
         condition: state
-        entity_id: sensor.heizungsregelung_gastherme_kreislauf
-        state: "Heizung"
+        entity_id: sensor.keller_zh_gastherme_kreislauf
+        state: "Heizen"
     action:
       - action: input_number.set_value
         data:
-          entity_id: input_number.heizungsregelung_gastherme_sollwert_temperatur
+          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
           value: 45
       - action: script.notify_warnung
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Heizkennlinie kann nicht berechnet werden. Gastherme auf feste 45°C Sollwert eingestellt."

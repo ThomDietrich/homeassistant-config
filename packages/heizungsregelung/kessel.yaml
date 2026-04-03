@@ -1,48 +1,51 @@
 input_boolean:
-  flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv:
-    name: Flag Heizungsregelung Festbrennstoffkessel Kesselkreispumpe aktiv aufgrund von Inaktivität
+  flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv:
+    name: Flag Keller ZH Festbrennstoffkessel Kesselkreispumpe aktiv aufgrund von Inaktivität
     icon: mdi:robot-industrial
 
 input_number:
-  heizungsregelung_kessel_pumpe_temperatur_ein:
-    name: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe Temperatur Einschaltung
+  keller_zh_kessel_pumpe_temperatur_ein:
+    name: Keller ZH Festbrennstoffkessel Kesselkreispumpe Temperatur Einschaltung
     unit_of_measurement: "°C"
     icon: mdi:thermometer-auto
     min: 15
     max: 100
     step: 1
+    initial: 45
     mode: box
-  heizungsregelung_kessel_pumpe_temperatur_aus:
-    name: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe Temperatur Ausschaltung
+  keller_zh_kessel_pumpe_temperatur_aus:
+    name: Keller ZH Festbrennstoffkessel Kesselkreispumpe Temperatur Ausschaltung
     unit_of_measurement: "°C"
     icon: mdi:thermometer-auto
     min: 15
     max: 100
     step: 1
+    initial: 40
     mode: box
-  heizungsregelung_kessel_pumpe_temperatur_notify:
-    name: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe Temperatur Benachrichtigung
+  keller_zh_kessel_pumpe_temperatur_notify:
+    name: Keller ZH Festbrennstoffkessel Kesselkreispumpe Temperatur Benachrichtigung
     unit_of_measurement: "°C"
     icon: mdi:thermometer-lines
     min: 15
     max: 100
     step: 1
+    initial: 85
     mode: box
 
 template:
   - binary_sensor:
-      - name: Heizungsregelung Kessel aktiv
-        unique_id: unique_id__heizungsregelung_kessel_aktiv
+      - name: Keller ZH Kessel aktiv
+        unique_id: unique_id__keller_zh_kessel_aktiv
         state: >
-          {{ states('sensor.heizungsregelung_kessel_abgas') | float(0) > 40 }}
+          {{ states('sensor.keller_zh_kessel_abgastemperatur') | float(0) > 40 }}
         availability: >
-          {{ states('sensor.heizungsregelung_kessel_abgas') not in [ 'unavailable', 'none', 'unknown' ] }}
+          {{ states('sensor.keller_zh_kessel_abgastemperatur') not in [ 'unavailable', 'none', 'unknown' ] }}
 
 sensor:
   - platform: statistics
-    name: Heizungsregelung Kessel Abgas Aenderung 10min
-    unique_id: unique_id__heizungsregelung_kessel_abgas_change
-    entity_id: sensor.heizungsregelung_kessel_abgas
+    name: Keller ZH Kessel Abgas Aenderung 10min
+    unique_id: unique_id__keller_zh_kessel_abgas_change
+    entity_id: sensor.keller_zh_kessel_abgastemperatur
     state_characteristic: change
     max_age:
       minutes: 10
@@ -51,43 +54,43 @@ sensor:
 automation:
   ##############################################################################
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe ein (Hysterese)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe ein (Hysterese)
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
-        above: input_number.heizungsregelung_kessel_pumpe_temperatur_ein
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
+        above: input_number.keller_zh_kessel_pumpe_temperatur_ein
     actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
       - action: switch.turn_on
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe ein (hohe Temperatur)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe ein (hohe Temperatur)
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         above: 100
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         above: 150
     conditions:
       - condition: state
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
         state: "off"
     actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
       - action: switch.turn_on
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Festbrennstoffkessel Kesselkreispumpe außerplanmäßig ein bei hoher Temperatur"
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe ein (kein Sensorwert)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe ein (kein Sensorwert)
     triggers:
       - trigger: state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         to:
           - "unknown"
           - "unavailable"
@@ -95,93 +98,93 @@ automation:
           minutes: 10
     conditions:
       - condition: state
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
         state: "off"
     actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
       - action: switch.turn_on
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Festbrennstoffkessel Kesselkreispumpe außerplanmäßig ein bei fehlendem Sensorwert"
 
   ##############################################################################
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe ein (24h Inaktivität)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe ein (24h Inaktivität)
     triggers:
       - trigger: state
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
         to: "off"
         for:
           hours: 24
     actions:
       - action: input_boolean.turn_on
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
       - action: switch.turn_on
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Festbrennstoffkessel Kesselkreispumpe eingeschaltet nach 24h Inaktivität"
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe aus (24h Inaktivität)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe aus (24h Inaktivität)
     triggers:
       - trigger: state
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
         to: "on"
         for:
           minutes: 1
     conditions:
       - condition: state
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
         state: "on"
     actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_heizungsregelung_kessel_pumpe_ruhefahrt_aktiv
+        entity_id: input_boolean.flag_keller_zh_kessel_pumpe_ruhefahrt_aktiv
       - action: switch.turn_off
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Festbrennstoffkessel Kesselkreispumpe ausgeschaltet nach 24h Inaktivität"
 
   ##############################################################################
 
-  - alias: Heizungsregelung Festbrennstoffkessel Kesselkreispumpe aus (Hysterese)
+  - alias: Keller ZH Festbrennstoffkessel Kesselkreispumpe aus (Hysterese)
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
-        below: input_number.heizungsregelung_kessel_pumpe_temperatur_aus
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
+        below: input_number.keller_zh_kessel_pumpe_temperatur_aus
     conditions:
       - condition: state
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
         state: "on"
     actions:
       - action: switch.turn_off
-        entity_id: switch.heizungsregelung_kesselpufferkreis_umwaelzpumpe
+        entity_id: switch.keller_zh_kessel_pufferkreis_umwaelzpumpe
 
   ##############################################################################
 
-  - alias: Heizungsregelung Festbrennstoffkessel Benachrichtigung zum Nachfeuern
+  - alias: Keller ZH Festbrennstoffkessel Benachrichtigung zum Nachfeuern
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
-        below: input_number.heizungsregelung_kessel_pumpe_temperatur_notify
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
+        below: input_number.keller_zh_kessel_pumpe_temperatur_notify
     conditions:
       - condition: time
         after: "10:00:00"
         before: "22:00:00"
       - condition: numeric_state
-        entity_id: sensor.heizungsregelung_kesselpufferkreis_ruecklauf
+        entity_id: sensor.keller_zh_kessel_pufferkreis_ruecklauftemperatur
         below: 65
       - condition: template
         value_template: "{{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}"
     actions:
       - action: notify.werner
         data:
-          title: "AWF1877 Heizungsregelung"
+          title: "AWF1877 Keller ZH"
           message: "Bitte Holz im Festbrennstoffkessel nachlegen!"
           data:
             channel: Aktion erforderlich
@@ -192,22 +195,22 @@ automation:
             tag: "holzkessel_nachlegen"
       - action: persistent_notification.create
         data:
-          title: "AWF1877 Heizungsregelung"
+          title: "AWF1877 Keller ZH"
           message: "Bitte Holz im Festbrennstoffkessel nachlegen!"
           notification_id: "pn_holzkessel_nachlegen"
 
-  - alias: Heizungsregelung Festbrennstoffkessel Benachrichtigung zum Nachfeuern löschen
+  - alias: Keller ZH Festbrennstoffkessel Benachrichtigung zum Nachfeuern löschen
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
-        above: input_number.heizungsregelung_kessel_pumpe_temperatur_notify
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
+        above: input_number.keller_zh_kessel_pumpe_temperatur_notify
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         below: 35
     actions:
       - action: notify.werner
         data:
-          title: "AWF1877 Heizungsregelung"
+          title: "AWF1877 Keller ZH"
           message: "clear_notification" # special action
           data:
             tag: "holzkessel_nachlegen"
@@ -215,7 +218,7 @@ automation:
         data:
           notification_id: "pn_holzkessel_nachlegen"
 
-  - alias: Heizungsregelung Festbrennstoffkessel Benachrichtigung Temperatur erreicht
+  - alias: Keller ZH Festbrennstoffkessel Benachrichtigung Temperatur erreicht
     triggers:
       - trigger: numeric_state
         entity_id: sensor.pufferspeicher_durchwarmung
@@ -223,20 +226,20 @@ automation:
     actions:
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Pufferspeicher blau durchgeheizt"
 
-  - alias: Heizungsregelung Festbrennstoffkessel Benachrichtigung Temperatur erreicht
+  - alias: Keller ZH Festbrennstoffkessel Benachrichtigung Temperatur erreicht
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kesselpufferkreis_ruecklauf
+        entity_id: sensor.keller_zh_kessel_pufferkreis_ruecklauftemperatur
         above: 70
         for:
           minutes: 5
     actions:
       - action: notify.werner
         data:
-          title: "AWF1877 Heizungsregelung"
+          title: "AWF1877 Keller ZH"
           message: "clear_notification" # special action
           data:
             tag: "holzkessel_nachlegen"
@@ -245,56 +248,56 @@ automation:
           notification_id: "pn_holzkessel_nachlegen"
       - action: script.notify_info
         data:
-          msg_title: "AWF1877 Heizungsregelung"
+          msg_title: "AWF1877 Keller ZH"
           msg_text: "Pufferspeicher durchgeheizt. Bitte Heizung drosseln"
 
   ##############################################################################
 
-  - alias: Heizungsregelung Festbrennstoffkessel Abgas Warnung
+  - alias: Keller ZH Festbrennstoffkessel Abgas Warnung
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_abgas
+        entity_id: sensor.keller_zh_kessel_abgastemperatur
         above: 370
         for:
           minutes: 5
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_ruecklauf
+        entity_id: sensor.keller_zh_kessel_ruecklauftemperatur
         above: 75
         for:
           minutes: 5
     actions:
       - action: script.notify_warnung
         data:
-          msg_title: "AWF1877 Heizungsregelung Warnung"
+          msg_title: "AWF1877 Keller ZH Warnung"
           msg_text: "Problem mit Festbrennstoffkessel: '{{ trigger.entity_id }}'={{ trigger.to_state.state }}. Bitte prüfen."
 
-  - alias: Heizungsregelung Festbrennstoffkesselpufferkreis Warnung
+  - alias: Keller ZH Festbrennstoffkesselpufferkreis Warnung
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kesselpufferkreis_ruecklauf
+        entity_id: sensor.keller_zh_kessel_pufferkreis_ruecklauftemperatur
         above: 45
         for:
           minutes: 3
     actions:
       - action: script.notify_warnung
         data:
-          msg_title: "AWF1877 Heizungsregelung Warnung"
+          msg_title: "AWF1877 Keller ZH Warnung"
           msg_text: "Festbrennstoffkessel Pufferkreis Rücklauf zu hoch! Vermutlich durchgeheizt. Bitte prüfen. '{{ trigger.entity_id }}'={{ trigger.to_state.state }}"
 
-  - alias: Heizungsregelung Festbrennstoffkesselpufferkreis Alarm
+  - alias: Keller ZH Festbrennstoffkesselpufferkreis Alarm
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kessel_vorlauf
+        entity_id: sensor.keller_zh_kessel_vorlauftemperatur
         above: 85
         for:
           minutes: 3
       - trigger: numeric_state
-        entity_id: sensor.heizungsregelung_kesselpufferkreis_ruecklauf
+        entity_id: sensor.keller_zh_kessel_pufferkreis_ruecklauftemperatur
         above: 55
         for:
           minutes: 3
     actions:
       - action: script.notify_alarm
         data:
-          msg_title: "AWF1877 Heizungsregelung Alarm"
+          msg_title: "AWF1877 Keller ZH Alarm"
           msg_text: "Festbrennstoffkessel Vorlauf / Pufferkreis Rücklauf zu hoch! Bitte prüfen. '{{ trigger.entity_id }}'={{ trigger.to_state.state }}"
