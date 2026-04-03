@@ -19,12 +19,23 @@ secrets.yaml
 
 # Non-track folders
 blueprints/
+.cache/
 custom_components/
 custom_templates/
+custom_icons/
 tts/
 www/icons/
 www/floorplans/
 www/community/
+
+# Runtime
+.ha_run.lock
+go2rtc*
+deps/
+solcast_solar/
+
+# Zigbee2MQTT runtime
+zigbee2mqtt/*_backup*.yaml
 
 # Other
 *.uuid
