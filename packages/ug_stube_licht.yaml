@@ -1,0 +1,42 @@
+automation:
+  - alias: Schalte beide UG Stube Lichter mit Wohnstube Taster
+    trigger:
+      - trigger: state
+        entity_id: event.ug_wohnstube_licht_taster_ereignis
+    condition:
+      - condition: state
+        entity_id: event.ug_wohnstube_licht_taster_ereignis
+        attribute: event_type
+        state: button_pressed_long
+    action:
+      - if:
+          - condition: state
+            entity_id: light.ug_wohnstube_licht_deckenlampe
+            state: "off"
+        then:
+          - action: light.turn_off
+            entity_id: light.ug_gute_stube_licht_deckenlampe
+        else:
+          - action: light.turn_on
+            entity_id: light.ug_gute_stube_licht_deckenlampe
+
+  - alias: Schalte beide UG Stube Lichter mit Gute Stube Taster
+    trigger:
+      - trigger: state
+        entity_id: event.ug_gute_stube_licht_taster_ereignis
+    condition:
+      - condition: state
+        entity_id: event.ug_gute_stube_licht_taster_ereignis
+        attribute: event_type
+        state: button_pressed_long
+    action:
+      - if:
+          - condition: state
+            entity_id: light.ug_gute_stube_licht_deckenlampe
+            state: "off"
+        then:
+          - action: light.turn_off
+            entity_id: light.ug_wohnstube_licht_deckenlampe
+        else:
+          - action: light.turn_on
+            entity_id: light.ug_wohnstube_licht_deckenlampe

@@ -1,0 +1,27 @@
+automation:
+  - alias: Kinderzimmer-Irene Deckenlicht mit Zwischentaster (Durchgangstür)
+    triggers:
+      - trigger: state
+        entity_id: event.kinderzimmer_irene_taster_zwischentuer_taster_ereignis
+    conditions:
+      - condition: state
+        entity_id: event.kinderzimmer_irene_taster_zwischentuer_taster_ereignis
+        attribute: event_type
+        state: button_pressed_short
+    actions:
+      - action: light.toggle
+        entity_id: light.kinderzimmer_irene_licht
+
+  - alias: Kinderzimmer-Irene Deckenlicht mit Taster am Bett
+    triggers:
+      - trigger: state
+        entity_id: event.kinderzimmer_irene_taster_bett_action
+        not_to:
+          - "unknown"
+          - "unavailable"
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.to_state.attributes.event_type == '1_initial_press' or trigger.to_state.attributes.event_type == '2_initial_press' }}"
+    action:
+      - action: light.toggle
+        entity_id: light.kinderzimmer_irene_licht

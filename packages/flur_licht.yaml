@@ -1,0 +1,138 @@
+template:
+  - binary_sensor:
+      - name: Flur Bewegungsmelder Gruppe
+        unique_id: unique_id__flur_bewegungsmelder_gruppe
+        state: >
+          {{ is_state("binary_sensor.flur_og_bewegungsmelder_raucherfenster_occupancy", "on") or is_state("binary_sensor.flur_og_bewegungsmelder_uv_occupancy", "on") or is_state("binary_sensor.flur_treppenhaus_bewegungsmelder_occupancy", "on") }}
+        availability: >
+          {{ has_value("binary_sensor.flur_og_bewegungsmelder_raucherfenster_occupancy") and has_value("binary_sensor.flur_og_bewegungsmelder_uv_occupancy") and has_value("binary_sensor.flur_treppenhaus_bewegungsmelder_occupancy") }}
+
+input_boolean:
+  flur_bewegungsmelder_licht_automation:
+    name: Flur Bewegungsmelder Licht Automatisierung
+    icon: mdi:robot-industrial
+
+automation:
+  ##############################################################################
+  # Bewegungsmelder
+  - alias: Schalte Flur Deckenlicht bei Inaktivität aus
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.flur_bewegungsmelder_gruppe
+        to: "off"
+        for:
+          minutes: 3333
+    condition:
+      - alias: Automation aktiv
+        condition: state
+        entity_id: input_boolean.flur_bewegungsmelder_licht_automation
+        state: "on"
+      - condition: state
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+        state: "on"
+    action:
+      - action: light.turn_off
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+
+  ##############################################################################
+  # Nachtlicht
+  - alias: Schalte Nachtlicht nach Deckenlicht bedingt ein
+    trigger:
+      - trigger: state
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+        to: "off"
+    condition:
+      - alias: Automation aktiv
+        condition: state
+        entity_id: input_boolean.flur_bewegungsmelder_licht_automation
+        state: "on"
+      - alias: Nachtlicht ist aus
+        condition: state
+        entity_id: light.haus_uv_astra_flur_nachtlicht
+        state: "off"
+      - alias: Bewegung kürzlich beobachtet
+        condition: state
+        entity_id: binary_sensor.flur_bewegungsmelder_gruppe
+        state: "on"
+      - alias: Abends bzw nachts
+        condition: state
+        entity_id: sun.sun
+        state: below_horizon
+    action:
+      - action: light.turn_on
+        target:
+          entity_id: light.haus_uv_astra_flur_nachtlicht
+        data:
+          transition: 0
+
+  - alias: Schalte Nachtlicht mit Bewegungsmelder ein
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.flur_bewegungsmelder_gruppe
+        to: "on"
+    condition:
+      - alias: Automation aktiv
+        condition: state
+        entity_id: input_boolean.flur_bewegungsmelder_licht_automation
+        state: "on"
+      - alias: Deckenlicht aus
+        condition: state
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+        state: "off"
+      - alias: Nachtlicht aus
+        condition: state
+        entity_id: light.haus_uv_astra_flur_nachtlicht
+        state: "off"
+      - alias: Abends bzw nachts
+        condition: state
+        entity_id: sun.sun
+        state: below_horizon
+    action:
+      - action: light.turn_on
+        target:
+          entity_id: light.haus_uv_astra_flur_nachtlicht
+        data:
+          transition: 1
+          brightness_pct: 100
+
+  - alias: Schalte Nachtlicht mit Bewegungsmelder aus
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.flur_bewegungsmelder_gruppe
+        to: "off"
+        for:
+          minutes: 3
+    condition:
+      - alias: Automation aktiv
+        condition: state
+        entity_id: input_boolean.flur_bewegungsmelder_licht_automation
+        state: "on"
+      - condition: state
+        entity_id: light.haus_uv_astra_flur_nachtlicht
+        state: "on"
+    action:
+      - action: light.turn_off
+        target:
+          entity_id: light.haus_uv_astra_flur_nachtlicht
+        data:
+          transition: 5
+
+  - alias: Schalte Nachtlicht bei Deckenlicht aus
+    trigger:
+      - trigger: state
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+        to: "on"
+    condition:
+      - alias: Automation aktiv
+        condition: state
+        entity_id: input_boolean.flur_bewegungsmelder_licht_automation
+        state: "on"
+      - condition: state
+        entity_id: light.haus_uv_astra_flur_nachtlicht
+        state: "on"
+    action:
+      - action: light.turn_off
+        target:
+          entity_id: light.haus_uv_astra_flur_nachtlicht
+        data:
+          transition: 0

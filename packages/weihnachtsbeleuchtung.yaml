@@ -1,0 +1,31 @@
+automation:
+  - alias: Weihnachtsbeleuchtung zum Kaffee ein
+    trigger:
+      - trigger: time
+        at: "15:30:00"
+    action:
+      - action: light.turn_on
+        entity_id: light.hof_weihnachtskonifere
+
+  - alias: Weihnachtsbeleuchtung zum Sonnenuntergang ein
+    trigger:
+      - trigger: sun
+        event: sunset
+        offset: "00:15:00"
+    action:
+      - action: light.turn_on
+        entity_id: light.hof_weihnachtskutsche
+      - action: light.turn_on
+        entity_id: light.halle_weihnachtsstern
+
+  - alias: Weihnachtsbeleuchtung aus
+    trigger:
+      - trigger: time
+        at: "22:00:00"
+    action:
+      - action: light.turn_off
+        entity_id: light.hof_weihnachtskonifere
+      - action: light.turn_off
+        entity_id: light.hof_weihnachtskutsche
+      - action: light.turn_off
+        entity_id: light.halle_weihnachtsstern

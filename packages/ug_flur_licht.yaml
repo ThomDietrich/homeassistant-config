@@ -1,0 +1,22 @@
+automation:
+  - alias: Schalte UG Flur Deckenlicht mit Taster im Schlafzimmer ein
+    triggers:
+      - trigger: state
+        entity_id: event.ug_schlafstube_eingang_taster_action
+        not_to:
+          - "unknown"
+          - "unavailable"
+    actions:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.to_state.attributes.event_type == 'on' or trigger.to_state.attributes.event_type == 'brightness_move_up' }}"
+            sequence:
+              - action: light.turn_on
+                entity_id: light.haus_uv_astra_flur_unten_deckenlicht
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.to_state.attributes.event_type == 'off' or trigger.to_state.attributes.event_type == 'brightness_move_down' }}"
+            sequence:
+              - action: light.turn_off
+                entity_id: light.haus_uv_astra_flur_unten_deckenlicht

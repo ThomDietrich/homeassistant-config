@@ -1,0 +1,39 @@
+automation:
+  - alias: UG Stube Rollos abends runter
+    trigger:
+      - trigger: sun
+        event: sunset
+        offset: "00:30:00"
+    action:
+      - action: cover.close_cover
+        entity_id: cover.ug_gute_stube_rollo_links_rollosteuerung
+      - action: cover.close_cover
+        entity_id: cover.ug_gute_stube_rollo_rechts_rollosteuerung
+
+  - alias: UG Stube Rollos früh hoch
+    trigger:
+      - trigger: sun
+        event: sunrise
+        offset: "01:00:00"
+    action:
+      - if:
+          - alias: "Temperatur Vorhersage vefügbar und hoch"
+            condition: template
+            value_template: |-
+              {{ has_value('sensor.dwd_forecast_temp') and states('sensor.dwd_forecast_temp') | float > 26 }}
+        then:
+          - action: cover.set_cover_position
+            target:
+              entity_id: cover.ug_gute_stube_rollo_links_rollosteuerung
+            data:
+              position: 30
+          - action: cover.set_cover_position
+            target:
+              entity_id: cover.ug_gute_stube_rollo_rechts_rollosteuerung
+            data:
+              position: 30
+        else:
+          - action: cover.open_cover
+            entity_id: cover.ug_gute_stube_rollo_links_rollosteuerung
+          - action: cover.open_cover
+            entity_id: cover.ug_gute_stube_rollo_rechts_rollosteuerung
