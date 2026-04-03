@@ -1,0 +1,40 @@
+# automation:
+#   - id: "1652427651624"
+#     alias: Irene Hausbatterie voll Benachrichtigung
+#     trigger:
+#       - trigger: numeric_state
+#         entity_id: sensor.kostal_plenticore_scb_battery_soc
+#         above: 97
+#     action:
+#       - action: notify.irene_plus
+#         data:
+#           title: "AWF1877 Meldung"
+#           message: "Hausbatterie ist jetzt voll geladen. Guter Zeitpunkt um die Waschmaschine zu starten :)"
+#           data:
+#             channel: Info
+
+#   - id: "1652427651630"
+#     alias: Irene EVCC Stop wegen fehlender Sonne
+#     trigger:
+#       - trigger: numeric_state
+#         entity_id: sensor.evcc_charge_power_w
+#         below: 10
+#         for:
+#           minutes: 3
+#     condition:
+#       - condition: state
+#         entity_id: select.evcc_mode
+#         state: "pv"
+#       - condition: state
+#         entity_id: binary_sensor.evcc_loadpoint_connected
+#         state: "on"
+#       - condition: numeric_state
+#         entity_id: sensor.kostal_plenticore_scb_solar_power
+#         below: 1500
+#     action:
+#       - action: notify.irene_plus
+#         data:
+#           title: "AWF1877 Meldung"
+#           message: "Autoladung wegen fehlender Sonne im PV Modus gestoppt"
+#           data:
+#             channel: Info

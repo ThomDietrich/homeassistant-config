@@ -1,0 +1,7 @@
+sensor:
+  - platform: rest
+    name: Go-eCharger Firmware Version
+    unique_id: uniqueid__go_echarger_firmware_version
+    resource: http://192.168.23.90/api/status?filter=fwv
+    value_template: "{{ value_json.fwv }}"
+    timeout: 3
