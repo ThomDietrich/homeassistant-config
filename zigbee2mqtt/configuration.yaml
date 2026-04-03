@@ -1,0 +1,96 @@
+version: 5
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://core-mosquitto:1883
+  user: mqtt
+  password: '!secret mqtt_password'
+  include_device_information: false
+serial:
+  rtscts: false
+  port: tcp://192.168.23.92:6638
+  adapter: zstack
+  baudrate: 115200
+  disable_led: false
+advanced:
+  log_level: info
+  channel: 25
+  network_key: '!secret network_key'
+  pan_id: '!secret pan_id'
+  ext_pan_id: '!secret ext_pan_id'
+  transmit_power: 20
+  last_seen: ISO_8601_local
+frontend:
+  enabled: true
+  port: 8099
+homeassistant:
+  enabled: true
+  discovery_topic: homeassistant
+  experimental_event_entities: true
+  legacy_triggers: false
+availability:
+  enabled: true
+devices:
+  '0xf0d1b800001e2ba0':
+    friendly_name: Kinderzimmer Wandlampe vorn
+  '0xf0d1b800001e270e':
+    friendly_name: Kinderzimmer Wandlampe hinten
+  '0x5cc7c1fffea50dbb':
+    friendly_name: Kinderzimmer Irene Taster Bett
+  '0x00158d0006f6d3c4':
+    friendly_name: Aqara Wuerfel
+  '0x00158d008afd9064':
+    friendly_name: Kinderzimmer Raumsensor
+  '0x14b457fffe91d832':
+    friendly_name: Kinderzimmer Bewegungsmelder Beamer
+  '0x842e14fffe46027f':
+    friendly_name: Kinderzimmer Eckstehlampe unten
+  '0x5c0272fffe51fb53':
+    friendly_name: Kinderzimmer Eckstehlampe oben
+  '0x90fd9ffffe657199':
+    friendly_name: Kinderzimmer Deckenlampe hinten
+  '0xd0cf5efffef15e40':
+    friendly_name: Kinderzimmer Deckenlampe vorn
+  '0x60a423fffefce25e':
+    friendly_name: Kinderzimmer Eingang Taster
+  '0x0c4314fffe03c6c8':
+    friendly_name: Flur OG Bewegungsmelder Raucherfenster
+  '0x5c0272fffeac2ff2':
+    friendly_name: Flur OG Bewegungsmelder UV
+  '0x5c0272fffeb1d7a7':
+    friendly_name: Flur Treppenhaus Bewegungsmelder
+  '0xcc86ecfffe9fc571':
+    friendly_name: Zigbee Repeater UG Küche
+  '0x04cd15fffe471771':
+    friendly_name: UG Bad Taster Eingang
+  '0x5c0272fffe9d8d80':
+    friendly_name: UG Küche Fenster Taster
+  '0xcc86ecfffe19cd85':
+    friendly_name: Zigbee Repeater Büro
+  '0x6cfd22fffe1c803e':
+    friendly_name: Zigbee Repeater UG Wohnstube
+  '0x6cfd22fffe7fe85f':
+    friendly_name: Zigbee Repeater DG hinten
+  '0x5c0272fffeacf3d9':
+    friendly_name: UG Schlafstube Eingang Taster
+  '0x6cfd22fffe7fbce1':
+    friendly_name: Zigbee Repeater Milchhaus
+  '0x54ef441000e687fc':
+    friendly_name: Kinderzimmer Heizstellglied
+  '0xa4c1380acefce952':
+    friendly_name: Kinderzimmer Irene Heizstellglied
+  '0x847127fffe178297':
+    friendly_name: OG Schlafstube Heizstellglied
+  '0x842712fffeba10a1':
+    friendly_name: Buero Heizstellglied
+  '0x00158d008b04cacc':
+    friendly_name: Buero Raumsensor
+  '0xa4c138882bf6faf8':
+    friendly_name: Keller Carbon Monoxide Alarm
+  '0x08ddebfffef48eb0':
+    friendly_name: UG Bad Deckenlicht
+  '0x08ddebfffef4a86b':
+    friendly_name: UG WC Deckenlicht
+  '0x00158d000af28597':
+    friendly_name: OG Baustelle Raumsensor
+  '0x00158d000af2233a':
+    friendly_name: OG Schlafstube Raumsensor
