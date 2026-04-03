@@ -1,0 +1,51 @@
+automation:
+  #
+  # Ikea Shortcut Taster im Badezimmer oben
+  #
+  # - alias: Heißes Duschwasser mit IKEA Taster im Bad oben
+  #   trigger:
+  #     - trigger: event
+  #       event_type: zha_event
+  #       event_data:
+  #         device_id: 4610c2aa6ae33fc4d92cb41326433739
+  #         # command: "on" # short press
+  #         # command: "off" # double press
+  #         command: "move_with_on_off" # long press
+  #     - trigger: event
+  #       event_type: zha_event
+  #       event_data:
+  #         device_id: 4610c2aa6ae33fc4d92cb41326433739
+  #         # command: "on" # short press
+  #         command: "off" # double press
+  #         # command: "move_with_on_off" # long press
+  #
+  # Ikea I/O Taster im Badezimmer oben
+  #
+  - alias: Heißes Duschwasser und Zirkulation mit IKEA I/O Taster im Bad
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: event.ug_bad_taster_eingang_action
+        not_to:
+          - "unknown"
+          - "unavailable"
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.to_state.attributes.event_type == 'on' or
+          trigger.to_state.attributes.event_type == 'off' or
+          trigger.to_state.attributes.event_type == 'brightness_move_up' or
+          trigger.to_state.attributes.event_type == 'brightness_move_down' }}
+    actions:
+      - action: button.press
+        data:
+          entity_id: button.heizungsregelung_warmwasser_manuell_bereiten
+      - action: switch.turn_on
+        entity_id: switch.heizungsregelung_warmwasser_zirkulationspumpe
+      - action: esphome.haus_uv_astra_play_rtttl
+        data:
+          song_str: "ack:d=8,o=6,b=100:8f,16g"
+      - delay: "0:10:00"
+      - action: switch.turn_off
+        entity_id: switch.heizungsregelung_warmwasser_zirkulationspumpe

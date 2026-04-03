@@ -1,0 +1,48 @@
+automation:
+  - alias: Regel Warnung bei Wasser im Keller
+    description: Reaktion auf ein Signal des Wasserstands-Sensors im Keller
+    mode: restart
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.keller_bodenwasser_sensor_wasserwarnung
+      - trigger: time_pattern
+        # Trigger at every full hour
+        hours: "*"
+        minutes: "0"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.keller_bodenwasser_sensor_wasserwarnung
+        state: "on"
+    action:
+      - repeat:
+          sequence:
+            - action: script.notify_alarm
+              data:
+                msg_title: "AWF1877 Warnung"
+                msg_text: "Wasser-Sensor im Keller wurde ausgelöst!"
+            - delay:
+                minutes: 15
+          until:
+            condition: state
+            entity_id: binary_sensor.keller_bodenwasser_sensor_wasserwarnung
+            state: "off"
+
+  - alias: Regel Warnung bei CO im Keller
+    description: Reaktion auf ein Signal des Kohlenmonoxid Sensors
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.keller_kohlenmonoxid_melder_kohlenmonoxid
+        above: 1
+    action:
+      - repeat:
+          sequence:
+            - action: script.notify_alarm
+              data:
+                msg_title: "AWF1877 Warnung"
+                msg_text: "Kohlenmonoxid Wert im Keller gemessen: {{ trigger.to_state.state }} ppm"
+            - delay:
+                minutes: 3
+          until:
+            condition: state
+            entity_id: sensor.keller_kohlenmonoxid_melder_kohlenmonoxid
+            state: 0

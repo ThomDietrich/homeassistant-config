@@ -1,0 +1,115 @@
+input_number:
+  # heizungsregelung_gastherme_sollwert_pwm_prozent:
+  #   name: Heizungsregelung Gastherme Sollwert (PWM level)
+  #   unit_of_measurement: "%"
+  #   icon: mdi:timelapse
+  #   min: 0
+  #   max: 100
+  #   step: 1
+  #   #initial: 30
+  #   #mode: box
+
+  # heizungsregelung_gastherme_sollwert_volt:
+  #   name: Heizungsregelung Gastherme Sollwert (Spannung)
+  #   unit_of_measurement: "V"
+  #   icon: mdi:power-plug-outline
+  #   min: 0
+  #   max: 10
+  #   step: 0.1
+  #   #initial: 3
+  #   #mode: box
+
+  heizungsregelung_gastherme_sollwert_temperatur:
+    name: Heizungsregelung Gastherme Sollwert (EM10 Vorlauf)
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-chevron-up
+    min: 0
+    max: 90
+    step: 0.1
+    #initial: 50
+    #mode: box
+
+template:
+  - sensor:
+      - name: Heizungsregelung Gastherme Sollwert Temperatur
+        unique_id: uniqueid__heizungsregelung_gastherme_sollwert_temperatur
+        unit_of_measurement: "°C"
+        state_class: measurement
+        device_class: temperature
+        state: >
+          {{ states('input_number.heizungsregelung_gastherme_sollwert_temperatur') | float(0) }}
+        availability: >
+          {{ states('input_number.heizungsregelung_gastherme_sollwert_temperatur') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+      - name: Heizungsregelung Gastherme Kreislauf
+        unique_id: unique_id__heizungsregelung_gastherme_kreislauf
+        state: >
+          {{ 'Heizung' if is_state('switch.heizungsregelung_warmwasserbereitung_anforderung', 'off') else 'Warmwasser' }}
+        availability: >
+          {{ states('switch.heizungsregelung_warmwasserbereitung_anforderung') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+  - binary_sensor:
+      - name: Heizungsregelung Gastherme Kreislauf Warmwasser
+        unique_id: unique_id__heizungsregelung_gastherme_kreislauf_warmwasser
+        state: >
+          {{ is_state('switch.heizungsregelung_warmwasserbereitung_anforderung', 'on') }}
+        availability: >
+          {{ states('switch.heizungsregelung_warmwasserbereitung_anforderung') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+      - name: Heizungsregelung Gastherme Kreislauf Heizung
+        unique_id: unique_id__heizungsregelung_gastherme_kreislauf_heizung
+        state: >
+          {{ is_state('switch.heizungsregelung_warmwasserbereitung_anforderung', 'off') }}
+        availability: >
+          {{ states('switch.heizungsregelung_warmwasserbereitung_anforderung') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+automation:
+  ##############################################################################
+  # EM10 Vorlauftemperatur °C --> 0..10V --> 0..100% --> ESP (esphome)
+
+  # - alias: Heizungsregelung Gastherme Sollwert über EM10 Vorlauftemperatur
+  #   trigger:
+  #     - trigger: state
+  #       entity_id: input_number.heizungsregelung_gastherme_sollwert_temperatur
+  #   action:
+  #     - action: input_number.set_value
+  #       data:
+  #         entity_id: input_number.heizungsregelung_gastherme_sollwert_volt
+  #         value: "{{ max( [0, (trigger.to_state.state | float(0) * 0.1253 - 1.2751)] ) | float(0) | round(2) }}"
+
+  # - alias: Heizungsregelung Gastherme Sollwert über Volt Schieberegler
+  #   trigger:
+  #     - trigger: state
+  #       entity_id: input_number.heizungsregelung_gastherme_sollwert_volt
+  #   action:
+  #     - action: input_number.set_value
+  #       data:
+  #         entity_id: input_number.heizungsregelung_gastherme_sollwert_pwm_prozent
+  #         value: "{{ max( [0, ((trigger.to_state.state | float(0) - 0.4535) * 10.05)] ) | int(0) }}"
+  #         # todo limit to 0..10V
+
+  # - alias: Heizungsregelung Gastherme Sollwert über Prozent Schieberegler
+  #   trigger:
+  #     - trigger: state
+  #       entity_id: input_number.heizungsregelung_gastherme_sollwert_pwm_prozent
+  #   action:
+  #     - action: esphome.heizungsregelung_gastherme_sollwert_pwm_set
+  #       data:
+  #         percentage: "{{ trigger.to_state.state | int(0) }}"
+
+  - alias: Heizungsregelung Gastherme Sollwert an ESP übergeben
+    trigger:
+      - alias: Regelmaessige Anpassung
+        trigger: state
+        entity_id: input_number.heizungsregelung_gastherme_sollwert_temperatur
+      - alias: ESP Absturz oder Neustart
+        trigger: state
+        entity_id: binary_sensor.heizungsregelung_esp_device_status
+        to: "on"
+      - alias: HA Neustart
+        trigger: homeassistant
+        event: start
+    action:
+      - action: esphome.heizungsregelung_gastherme_solltemperatur_set
+        data:
+          temperature: "{{ states('input_number.heizungsregelung_gastherme_sollwert_temperatur') | float(0) }}"

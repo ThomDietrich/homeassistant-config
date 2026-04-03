@@ -1,0 +1,113 @@
+automation:
+  - alias: Heizungsregelung ESP32 nicht verfügbar
+    mode: restart
+    trigger:
+      - trigger: state
+        entity_id: binary_sensor.heizungsregelung_esp_device_status
+        to: "off"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: binary_sensor.heizungsregelung_esp_device_status
+        to: "off"
+        for:
+          minutes: 60
+    action:
+      - action: script.notify_warnung
+        data:
+          msg_title: "AWF1877 Heizungsregelung Gerätewarnung"
+          msg_text: "ESP32 nicht mehr im Netzwerk verfügbar. Bitte prüfen."
+
+  - alias: Heizungsregelung Sensorwarnung
+    trigger:
+      - trigger: state
+        entity_id: sensor.heizungsregelung_sonnenkollektor
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: sensor.heizungsregelung_kessel_abgas
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: sensor.heizungsregelung_kessel_vorlauf
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: sensor.heizungsregelung_kessel_ruecklauf
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 10
+      - trigger: state
+        entity_id: sensor.pferdestall_temperature
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 30
+      - trigger: state
+        entity_id: sensor.weather_station_outtemp_c
+        to:
+          - "unknown"
+          - "unavailable"
+        for:
+          minutes: 30
+    action:
+      - action: script.notify_warnung
+        data:
+          msg_title: "AWF1877 Heizungsregelung Sensorwarnung"
+          msg_text: "Problem mit Sensor '{{ trigger.entity_id }}' (={{ trigger.to_state.state }}). Bitte prüfen."
+
+  - alias: Heizungsregelung Warmwassertemperatur gering
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_oben
+        below: 33
+        for:
+          hours: 3
+    action:
+      - action: script.notify_info
+        data:
+          msg_title: "AWF1877 Heizungsregelung"
+          msg_text: "Warmwassertemperatur ungewöhnlich niedrig ({{ trigger.to_state.state }} °C). Bitte prüfen."
+
+  - alias: Heizungsregelung Heizkreis Rücklauftemperatur gering
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_heizkreis_ruecklauf
+        below: 20
+        for:
+          minutes: 15
+    condition:
+      - alias: "Wetterstation meldet <5°C oder ist nicht verfügbar"
+        or:
+          - condition: numeric_state
+            entity_id: sensor.weather_station_windchill_c
+            below: 5
+          - condition: state
+            entity_id: sensor.weather_station_windchill_c
+            state:
+              - unknown
+              - unavailable
+    action:
+      - action: script.notify_info
+        data:
+          msg_title: "AWF1877 Heizungsregelung"
+          msg_text: "Heizkreis Rücklauftemperatur ungewöhnlich niedrig ({{ trigger.to_state.state }} °C) bei geringer Außentemperatur (oder wenn Wetterstation nicht verfügbar). Bitte prüfen."

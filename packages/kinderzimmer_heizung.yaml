@@ -1,0 +1,78 @@
+input_boolean:
+  kinderzimmer_heizung_automation:
+    name: Kinderzimmer Heizung Automation Aktiv
+    icon: mdi:robot-industrial
+
+input_number:
+  kinderzimmer_heizung_homeoffice_temperatur:
+    name: Kinderzimmer Heizung HomeOffice Temperatur
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+    min: 12
+    max: 28
+    step: 0.5
+    #initial: 10
+    mode: box
+
+template:
+  - sensor:
+      - name: kinderzimmer_temperatur
+        unique_id: uniqueid__kinderzimmer_temperatur
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {{ state_attr('climate.kinderzimmer_heizstellglied', 'current_temperature') | int(0) }}
+        availability: >
+          {{ states('climate.kinderzimmer_heizstellglied') not in [ 'unavailable', 'none', 'unknown' ] }}
+        attributes:
+          source: "climate.kinderzimmer_heizstellglied"
+
+automation:
+  - alias: Kinderzimmer Heizung Nachts aus
+    trigger:
+      - trigger: time
+        at: "00:30:00"
+    condition:
+      - alias: "Kinderzimmer Heizung Automation Aktiv"
+        condition: state
+        entity_id: input_boolean.kinderzimmer_heizung_automation
+        state: "on"
+      - alias: "Heizstellglied aktuell aktiv"
+        condition: numeric_state
+        entity_id: climate.kinderzimmer_heizstellglied
+        attribute: temperature
+        above: 13
+    action:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.kinderzimmer_heizstellglied
+        data:
+          temperature: 13
+          hvac_mode: heat
+
+  - alias: Kinderzimmer Heizung an wenn Thomas anwesend
+    trigger:
+      - trigger: time
+        at: "08:15:00"
+    condition:
+      - alias: "Kinderzimmer Heizung Automation Aktiv"
+        condition: state
+        entity_id: input_boolean.kinderzimmer_heizung_automation
+        state: "on"
+      - alias: "Thomas anwesend"
+        condition: state
+        entity_id: device_tracker.ths23u
+        state: "home"
+      - alias: "Heizstellglied nicht aus"
+        not:
+          - condition: state
+            entity_id: climate.kinderzimmer_heizstellglied
+            state: "off"
+    action:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.kinderzimmer_heizstellglied
+        data:
+          temperature: "{{ states('input_number.kinderzimmer_heizung_homeoffice_temperatur') | float(0) }}"
+          hvac_mode: heat

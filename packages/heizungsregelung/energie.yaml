@@ -1,0 +1,78 @@
+sensor:
+  - platform: derivative
+    name: Heizungsregelung Heizkreis Volumenstrom ZWISCHENSCHRITT
+    source: sensor.heizungsregelung_heizkreis_volumen
+    unit_time: min
+    time_window:
+      seconds: 30
+    round: 1
+
+  - platform: derivative
+    name: Heizungsregelung Heizkreis Leistung ZWISCHENSCHRITT
+    source: sensor.heizungsregelung_heizkreis_energie
+    unit_time: h
+    unit: kW
+    time_window:
+      seconds: 60
+    round: 2
+
+  - platform: derivative
+    name: Heizungsregelung Warmwasser Volumenstrom ZWISCHENSCHRITT
+    source: sensor.heizungsregelung_warmwasser_volumen
+    unit_time: min
+    time_window:
+      seconds: 30
+    round: 1
+
+  - platform: derivative
+    name: Heizungsregelung Warmwasser Leistung ZWISCHENSCHRITT
+    source: sensor.heizungsregelung_warmwasser_energie
+    unit_time: h
+    unit: kW
+    time_window:
+      seconds: 60
+    round: 2
+
+template:
+  - sensor:
+      - name: Heizungsregelung Heizkreis Volumenstrom
+        unique_id: uniqueid__heizungsregelung_heizkreis_volumenstrom_l_min
+        unit_of_measurement: "L/min"
+        icon: mdi:waves-arrow-right
+        state_class: measurement
+        device_class: volume_flow_rate
+        state: >
+          {{ states('sensor.heizungsregelung_heizkreis_volumenstrom_zwischenschritt') | float(0) if is_state('binary_sensor.heizungsregelung_heizkreis_volumenstrom_flusserkennung', 'on') else 0.0 }}
+        availability: >
+          {{ states('sensor.heizungsregelung_heizkreis_volumenstrom_zwischenschritt') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+      - name: Heizungsregelung Heizkreis Leistung
+        unique_id: uniqueid__heizungsregelung_heizkreis_leistung
+        unit_of_measurement: kW
+        state_class: measurement
+        device_class: power
+        state: >
+          {{ states('sensor.heizungsregelung_heizkreis_leistung_zwischenschritt') | float(0) if is_state('binary_sensor.heizungsregelung_heizkreis_volumenstrom_flusserkennung', 'on') else 0.0 }}
+        availability: >
+          {{ states('sensor.heizungsregelung_heizkreis_leistung_zwischenschritt') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+      - name: Heizungsregelung Warmwasser Volumenstrom
+        unique_id: uniqueid__heizungsregelung_warmwasser_volumenstrom_l_min
+        unit_of_measurement: "L/min"
+        icon: mdi:waves-arrow-right
+        state_class: measurement
+        device_class: volume_flow_rate
+        state: >
+          {{ states('sensor.heizungsregelung_warmwasser_volumenstrom_zwischenschritt') | float(0) if is_state('binary_sensor.heizungsregelung_warmwasser_volumenstrom_flusserkennung', 'on') else 0.0 }}
+        availability: >
+          {{ states('sensor.heizungsregelung_warmwasser_volumenstrom_zwischenschritt') not in [ 'unavailable', 'none', 'unknown' ] }}
+
+      - name: Heizungsregelung Warmwasser Leistung
+        unique_id: uniqueid__heizungsregelung_warmwasser_leistung
+        unit_of_measurement: kW
+        state_class: measurement
+        device_class: power
+        state: >
+          {{ states('sensor.heizungsregelung_warmwasser_leistung_zwischenschritt') | float(0) if is_state('binary_sensor.heizungsregelung_warmwasser_volumenstrom_flusserkennung', 'on') else 0.0 }}
+        availability: >
+          {{ states('sensor.heizungsregelung_warmwasser_leistung_zwischenschritt') not in [ 'unavailable', 'none', 'unknown' ] }}

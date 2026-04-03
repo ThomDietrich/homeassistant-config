@@ -1,0 +1,106 @@
+automation:
+  - alias: Provide Buero TRV with external temperature value (difference)
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: sensor.buero_raumsensor_temperature
+      - trigger: state
+        entity_id: climate.buero_heizstellglied
+        attribute: current_temperature
+    actions:
+      - if:
+          - condition: template
+            value_template: >-
+              {{ not has_value("sensor.buero_raumsensor_temperature") }}
+        then:
+          - action: number.set_value
+            target:
+              entity_id: number.buero_heizstellglied_local_temperature_calibration
+            data:
+              value: 0
+        else:
+          - delay: 3 # seconds
+          - action: number.set_value
+            target:
+              entity_id: number.buero_heizstellglied_local_temperature_calibration
+            data:
+              value: >
+                {%- set t_trv = state_attr("climate.buero_heizstellglied", "current_temperature") | float(0) -%}
+                {%- set t_ext = states('sensor.buero_raumsensor_temperature') | float(0) -%}
+                {%- set current_calibration = states('number.buero_heizstellglied_local_temperature_calibration') | float(0) -%}
+                {%- set new_calibration = (current_calibration - (t_trv - t_ext)) | round(1) -%}
+                {{ max([-5, min([5, new_calibration])]) }}
+
+  - alias: Provide OG Schlafstube TRV with external temperature value (difference)
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: sensor.og_schlafstube_raumsensor_temperature
+      - trigger: state
+        entity_id: climate.og_schlafstube_heizstellglied
+        attribute: current_temperature
+    actions:
+      - if:
+          - condition: template
+            value_template: >-
+              {{ not has_value("sensor.og_schlafstube_raumsensor_temperature") }}
+        then:
+          - action: number.set_value
+            target:
+              entity_id: number.og_schlafstube_heizstellglied_local_temperature_calibration
+            data:
+              value: 0
+        else:
+          - delay: 3 # seconds
+          - action: number.set_value
+            target:
+              entity_id: number.og_schlafstube_heizstellglied_local_temperature_calibration
+            data:
+              value: >
+                {%- set t_trv = state_attr("climate.og_schlafstube_heizstellglied", "current_temperature") | float(0) -%}
+                {%- set t_ext = states('sensor.og_schlafstube_raumsensor_temperature') | float(0) -%}
+                {%- set current_calibration = states('number.og_schlafstube_heizstellglied_local_temperature_calibration') | float(0) -%}
+                {%- set new_calibration = (current_calibration - (t_trv - t_ext)) | round(1) -%}
+                {{ max([-6, min([6, (new_calibration | round(1))])]) }}
+
+  - alias: Provide Kinderzimmer TRV with external temperature value (absolute measurement)
+    triggers:
+      - trigger: state
+        entity_id: sensor.kinderzimmer_raumsensor_temperature
+    actions:
+      # Handle fallback case when temperature sensor unavailable
+      - if:
+          - condition: template
+            value_template: >-
+              {{ not has_value("sensor.kinderzimmer_raumsensor_temperature") }}
+        then:
+          - action: select.select_option
+            target:
+              entity_id: select.kinderzimmer_heizstellglied_sensor
+            data:
+              option: "internal"
+          - stop: "External temperature sensor unavailable"
+
+      # Ensure TRV is set to follow external temperature sensor
+      - if:
+          - condition: template
+            value_template: >-
+              {{ not is_state("climate.kinderzimmer_heizstellglied", "external")}}
+        then:
+          - action: select.select_option
+            target:
+              entity_id: select.kinderzimmer_heizstellglied_sensor
+            data:
+              option: "external"
+          - delay:
+              seconds: 10
+
+      # Update TRV's external temperature info
+      - action: number.set_value
+        target:
+          entity_id: number.kinderzimmer_heizstellglied_external_temperature_input
+        data:
+          value: >-
+            {{ states("sensor.kinderzimmer_raumsensor_temperature") | float(0) | round(1) }}

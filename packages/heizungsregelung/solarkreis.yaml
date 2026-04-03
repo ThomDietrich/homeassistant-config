@@ -1,0 +1,188 @@
+input_boolean:
+  heizungsregelung_solarkreis_automation:
+    name: Heizungsregelung Solarkreis Automatisierung
+    icon: mdi:robot-industrial
+
+input_number:
+  heizungsregelung_solarkreispumpe_diff_ein:
+    name: Heizungsregelung Solarkreispumpe an (Temperaturdifferenz)
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+    min: 1
+    max: 30
+    step: 1
+    #initial: 10
+    mode: box
+
+  heizungsregelung_solarkreispumpe_diff_aus:
+    name: Heizungsregelung Solarkreispumpe aus (Temperaturdifferenz)
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+    min: 0
+    max: 30
+    step: 1
+    #initial: 3
+    mode: box
+
+  heizungsregelung_solarkreis_speichertemp_max:
+    name: Heizungsregelung Solarkreis Maximale Speichertemperatur
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-alert
+    min: 20
+    max: 90
+    step: 1
+    initial: 80
+    mode: box
+
+  heizungsregelung_solarkreis_kollektortemp_max:
+    name: Heizungsregelung Solarkreis Maximale Kollektortemperatur
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer-alert
+    min: 100
+    max: 130
+    step: 1
+    initial: 120
+    mode: box
+
+##############################################################################
+automation:
+  ##############################################################################
+  # Solarkreis aus
+
+  - alias: Heizungsregelung Solarkreis aus (Hysterese)
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_solarkreis_differenz_oben_unten
+        below: input_number.heizungsregelung_solarkreispumpe_diff_aus
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_solarkreis_differenz_oben_unten
+        below: -3 # failsafe
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heizungsregelung_solarkreis_automation
+        state: "on"
+      - condition: state
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+
+  - alias: Heizungsregelung Solarkreis aus (Maximale Speichertemperatur)
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        above: input_number.heizungsregelung_solarkreis_speichertemp_max
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heizungsregelung_solarkreis_automation
+        state: "on"
+      - condition: state
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+      - action: script.notify_alarm
+        data:
+          msg_title: "AWF1877 Solarkreis"
+          msg_text: "Solarkreis aus, maximale Speichertemperatur erreicht"
+
+  - alias: Heizungsregelung Solarkreis aus (Maximale Kollektortemperatur)
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_sonnenkollektor
+        above: input_number.heizungsregelung_solarkreis_kollektortemp_max
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heizungsregelung_solarkreis_automation
+        state: "on"
+      - condition: state
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+      - action: script.notify_alarm
+        data:
+          msg_title: "AWF1877 Solarkreis"
+          msg_text: "Solarkreis aus, maximale Kollektortemperatur erreicht"
+
+  - alias: Heizungsregelung Solarkreis aus (keine Sensorwerte)
+    triggers:
+      - trigger: state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        to: "unknown"
+        for:
+          minutes: 5
+      - trigger: state
+        entity_id: sensor.heizungsregelung_sonnenkollektor
+        to: "unknown"
+        for:
+          minutes: 5
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heizungsregelung_solarkreis_automation
+        state: "on"
+      - condition: state
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+      - action: script.notify_alarm
+        data:
+          msg_title: "AWF1877 Solarkreis"
+          msg_text: "Solarkreis aus, kein Sensorwert"
+
+  ##############################################################################
+  # Solarkreis ein
+
+  - alias: Heizungsregelung Solarkreis ein (Hysterese plus Bedingungen)
+    triggers:
+      - trigger: state
+        entity_id: sensor.heizungsregelung_solarkreis_differenz_oben_unten
+    conditions:
+      - alias: "Automation aktiv"
+        condition: state
+        entity_id: input_boolean.heizungsregelung_solarkreis_automation
+        state: "on"
+      - alias: "Solarkreispumpe aus"
+        condition: state
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+        state: "off"
+      - alias: "Temperaturdifferenz Hysteresewert überschritten"
+        condition: numeric_state
+        entity_id: sensor.heizungsregelung_solarkreis_differenz_oben_unten
+        above: input_number.heizungsregelung_solarkreispumpe_diff_ein
+      - alias: "Maximale Speichertemperatur nicht erreicht"
+        condition: numeric_state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        below: input_number.heizungsregelung_solarkreis_speichertemp_max
+      - alias: "Maximale Kollektortemperatur nicht erreicht"
+        condition: numeric_state
+        entity_id: sensor.heizungsregelung_sonnenkollektor
+        below: input_number.heizungsregelung_solarkreis_kollektortemp_max
+    actions:
+      - action: switch.turn_on
+        entity_id: switch.heizungsregelung_solarkreis_umwaelzpumpe
+
+  ##############################################################################
+
+  - alias: Heizungsregelung Solarkreis Sensoralarm
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_sonnenkollektor
+        above: input_number.heizungsregelung_solarkreis_kollektortemp_max
+        for:
+          minutes: 10
+      - trigger: numeric_state
+        entity_id: sensor.heizungsregelung_warmwasserspeicher_unten
+        above: input_number.heizungsregelung_solarkreis_speichertemp_max
+        for:
+          minutes: 10
+    actions:
+      - action: script.notify_alarm
+        data:
+          msg_title: "AWF1877 Solarkreis"
+          msg_text: "Problem mit Solarkreis: '{{ trigger.entity_id }}'={{ trigger.to_state.state }}. Bitte prüfen."
