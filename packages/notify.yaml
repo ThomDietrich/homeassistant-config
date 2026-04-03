@@ -1,0 +1,45 @@
+notify:
+  - platform: group
+    name: werner
+    services:
+      - action: mobile_app_pixel_6a
+
+  - platform: group
+    name: werner_plus
+    services:
+      - action: mobile_app_pixel_6a
+      - action: persistent_notification
+
+  ##############################################################################
+
+  - platform: group
+    name: thomas
+    services:
+      - action: mobile_app_ths23u
+
+  - platform: group
+    name: thomas_plus
+    services:
+      - action: mobile_app_ths23u
+      - action: persistent_notification
+
+  ##############################################################################
+
+  - platform: group
+    name: werner_thomas_plus
+    services:
+      - action: mobile_app_ths23u
+      - action: persistent_notification
+
+  ##############################################################################
+
+  - platform: group
+    name: irene
+    services:
+      - action: mobile_app_irene_redmi
+
+  - platform: group
+    name: irene_plus
+    services:
+      - action: mobile_app_irene_redmi
+      - action: persistent_notification

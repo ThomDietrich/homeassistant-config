@@ -1,0 +1,28 @@
+automation:
+  - alias: Ertöne Buzzer mit Flur oben Deckenlicht
+    trigger:
+      - trigger: state
+        entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+        to: "on"
+    # condition:
+    #   - condition: state
+    #     entity_id: input_boolean.flag_flur_oben_deckenlicht_buzzer_aktiv
+    #     state: "on"
+    action:
+      - action: esphome.haus_uv_astra_play_rtttl
+        data:
+          song_str: short:d=32,o=4,b=200:c
+
+  # - alias: Ertöne Buzzer mit Flur unten Deckenlicht
+  #   trigger:
+  #     - trigger: state
+  #       entity_id: light.haus_uv_astra_flur_unten_deckenlicht
+  #       to: "on"
+  #   condition:
+  #     - condition: state
+  #       entity_id: input_boolean.flag_flur_oben_deckenlicht_buzzer_aktiv
+  #       state: "on"
+  #   action:
+  #     - action: esphome.haus_uv_astra_play_rtttl
+  #       data:
+  #         song_str: short:d=32,o=4,b=200:f

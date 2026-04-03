@@ -1,0 +1,67 @@
+remote:
+  - platform: zmote
+    host: 192.168.23.253
+    devices:
+      - name: Epson EH-TW3200
+        commands:
+          - name: "POWER"
+            data: "1:1,0,37000,1,1,328,166,19,64,19,64,19,22,19,22,19,22,19,22,19,22,19,64,19,64,19,22,19,64,19,22,19,64,19,22,19,64,19,22,19,22,19,22,19,22,19,22,19,64,19,22,19,22,19,64,19,64,19,64,19,64,19,64,19,22,19,64,19,64,19,22,19,3692"
+
+      - name: Teufel Soundsystem
+        commands:
+          - name: "INPUT"
+            data: "1:1,0,37000,1,1,14,49,14,49,14,48,15,47,48,17,14,49,14,49,14,49,46,15,15,49,14,49,14,1304,16,49,14,49,14,49,14,49,45,16,16,46,15,49,14,48,48,17,14,49,14,49,14,3692"
+          - name: "VOL+"
+            data: "1:1,0,37000,1,1,14,49,14,49,14,49,45,18,14,49,14,48,47,16,15,49,14,49,14,49,14,49,14,1306,14,49,14,49,14,49,45,16,15,49,14,49,45,16,15,47,15,49,14,49,14,49,14,3692"
+          - name: "VOL-"
+            data: "1:1,0,37000,1,1,14,49,14,49,14,49,45,18,14,49,14,49,14,47,47,18,14,49,14,49,14,49,14,1306,15,49,14,47,15,49,46,17,14,49,14,49,14,49,45,16,15,49,14,49,14,49,14,3692"
+
+template:
+  - button:
+      - name: Kinderzimmer Teufel Soundsystem Input IR
+        unique_id: uniqueid__ir_teufel_input_ir_cmd
+        press:
+          - action: remote.send_command
+            target:
+              entity_id: remote.teufel_soundsystem
+            data:
+              command: INPUT
+        availability: >
+          {{ is_state("binary_sensor.kinderzimmer_zmote_ping", "on") }}
+        icon: mdi:remote
+
+      - name: Kinderzimmer Teufel Soundsystem Volume Up IR
+        unique_id: uniqueid__ir_teufel_vol_up_ir_cmd
+        press:
+          - action: remote.send_command
+            target:
+              entity_id: remote.teufel_soundsystem
+            data:
+              command: VOL+
+        availability: >
+          {{ is_state("binary_sensor.kinderzimmer_zmote_ping", "on") }}
+        icon: mdi:remote
+
+      - name: Kinderzimmer Teufel Soundsystem Volume Down IR
+        unique_id: uniqueid__ir_teufel_vol_down_ir_cmd
+        press:
+          - action: remote.send_command
+            target:
+              entity_id: remote.teufel_soundsystem
+            data:
+              command: VOL-
+        availability: >
+          {{ is_state("binary_sensor.kinderzimmer_zmote_ping", "on") }}
+        icon: mdi:remote
+
+      - name: Kinderzimmer Epson Beamer Power IR
+        unique_id: uniqueid__ir_epson_power_ir_cmd
+        press:
+          - action: remote.send_command
+            target:
+              entity_id: remote.epson_eh_tw3200
+            data:
+              command: POWER
+        availability: >
+          {{ is_state("binary_sensor.kinderzimmer_zmote_ping", "on") }}
+        icon: mdi:remote

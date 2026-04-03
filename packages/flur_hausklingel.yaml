@@ -1,0 +1,21 @@
+automation:
+  - alias: Hausklingel Benachrichtigung
+    trigger:
+      #  - trigger: state
+      #    entity_id: binary_sensor.haus_uv_astra_klingel_oben
+      #    to: "on"
+      #  - trigger: state
+      #    entity_id: binary_sensor.haus_uv_astra_klingel_unten
+      #    to: "on"
+      - trigger: state
+        entity_id: binary_sensor.haus_uv_astra_klingel
+        to: "on"
+    action:
+      - action: notify.werner_plus
+        data:
+          title: "AWF1877 Hausklingel"
+          message: "🔔 Es klingelt jemand an der Haustür! 🔔"
+          data:
+            channel: Hausklingel
+            importance: high
+            priority: high

@@ -1,0 +1,75 @@
+input_boolean:
+  halle_briefkasten_belegt:
+    name: Halle Briefkasten enthält Post
+    icon: mdi:email-outline
+    #initial: false
+
+automation:
+  - alias: Briefkasten Post eingeworfen
+    trigger:
+      - trigger: state
+        alias: Briefkasten Vibration erkannt
+        entity_id: binary_sensor.halle_briefkasten_vibration
+        from: "off"
+        to: "on"
+    action:
+      - action: input_boolean.turn_on
+        entity_id: input_boolean.halle_briefkasten_belegt
+      - action: notify.persistent_notification
+        data:
+          title: Post ist da
+          message: Der Briefkasten wurde betätigt
+
+  - alias: Briefkasten wurde geleert
+    trigger:
+      - trigger: event
+        alias: Briefkasten wurde geöffnet (zha_event current_orientation)
+        event_type: zha_event
+        event_data:
+          device_ieee: 00:15:8d:00:09:12:0a:0d
+          command: current_orientation
+    action:
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.halle_briefkasten_belegt
+
+template:
+  - trigger:
+      - id: "vibration"
+        trigger: state
+        alias: Briefkasten Vibration erkannt
+        entity_id: binary_sensor.halle_briefkasten_vibration
+        from: "off"
+        to: "on"
+      - id: "opened"
+        trigger: event
+        alias: Briefkasten wurde geöffnet (zha_event current_orientation)
+        event_type: zha_event
+        event_data:
+          device_ieee: 00:15:8d:00:09:12:0a:0d
+          command: current_orientation
+      - id: "unavail"
+        trigger: state
+        alias: Briefkasten Sensor nicht verfügbar
+        entity_id: binary_sensor.halle_briefkasten_vibration
+        to: "unavailable"
+      #- id: "ha_start"
+      #  trigger: homeassistant
+      #  event: start
+    binary_sensor:
+      - name: Halle Briefkasten enthaelt Post
+        unique_id: unique_id__halle_briefkasten_enthaelt_post
+        icon: mdi:email-multiple-outline
+        state: >
+          {% if trigger.id == 'ha_start' %}
+            unknown
+          {% elif trigger.id == 'opened' %}
+            {{ "off" }}
+          {% elif trigger.id == 'vibration' %}
+            {{ "on" }}
+          {% elif trigger.id == 'unavail' %}
+            unavailable
+          {% else %}
+            unknown
+          {% endif %}
+        availability: >
+          {{ has_value('binary_sensor.halle_briefkasten_vibration') }}

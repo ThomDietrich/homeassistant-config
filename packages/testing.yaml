@@ -1,0 +1,17 @@
+input_boolean:
+  test_trigger:
+    name: testing
+
+template:
+  - binary_sensor:
+      - name: Triggered Sensor 1
+        state: "{{ states('input_boolean.test_trigger') }}"
+
+      - name: Triggered Sensor 2
+        state: "{{ states('binary_sensor.triggered_sensor_1') }}"
+
+      - name: Triggered Sensor 3
+        state: "{{ states('binary_sensor.triggered_sensor_2') }}"
+
+
+

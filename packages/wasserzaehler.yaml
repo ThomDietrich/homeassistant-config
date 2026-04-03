@@ -1,0 +1,14 @@
+automation:
+  - alias: Wasserzähler Leckage letzte Nacht erkannt
+    trigger:
+      - trigger: time
+        at: "09:00:00"
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.wasserzaehler_zeit_seit_stundenweiser_null_wassermenge
+        above: 12
+    action:
+      - action: script.notify_info
+        data:
+          msg_title: "AWF1877 Wasserzähler"
+          msg_text: "Anhaltender Wasserfluss über Nacht festgestellt. Bitte prüfen."

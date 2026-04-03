@@ -1,0 +1,60 @@
+automation:
+  - alias: Torfahrtsschuppen vergessene Beleuchtung prüfen
+    trigger:
+      - trigger: time
+        at: "02:00:00"
+    condition:
+      alias: "Mindestens eine Lampe ist noch an"
+      or:
+        - condition: state
+          entity_id: light.torfahrtsschuppen_zk_astra_keller_deckenlicht
+          state: "on"
+          for:
+            minutes: 30
+        - condition: state
+          entity_id: light.torfahrtsschuppen_zk_astra_vorraum_deckenlicht
+          state: "on"
+          for:
+            minutes: 30
+        - condition: state
+          entity_id: light.torfahrtsschuppen_zk_astra_technikraum_deckenlicht
+          state: "on"
+          for:
+            minutes: 30
+    action:
+      - action: light.turn_off
+        entity_id: light.torfahrtsschuppen_zk_astra_keller_deckenlicht
+      - action: light.turn_off
+        entity_id: light.torfahrtsschuppen_zk_astra_vorraum_deckenlicht
+      - action: light.turn_off
+        entity_id: light.torfahrtsschuppen_zk_astra_technikraum_deckenlicht
+      - action: script.notify_info
+        data:
+          msg_title: "AWF1877 Torfahrtsschuppen"
+          msg_text: "Beleuchtung im Technikraum oder Torfahrskeller wurde vergessen. Schalte automatisch ab."
+
+  - alias: Torfahrtsschuppen Technikraum Lüftung mit Taupunkt ein
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.torfahrtsschuppen_raumsensor_dachboden_taupunkt
+        below: sensor.torfahrtsschuppen_raumsensor_technikraum_taupunkt
+    action:
+      - action: switch.turn_on
+        entity_id: switch.torfahrtsschuppen_zk_astra_technikraum_lueftung
+
+  - alias: Torfahrtsschuppen Technikraum Lüftung aus
+    trigger:
+      - trigger: numeric_state
+        entity_id: sensor.torfahrtsschuppen_raumsensor_dachboden_taupunkt
+        above: sensor.torfahrtsschuppen_raumsensor_technikraum_taupunkt
+      - trigger: numeric_state
+        entity_id: sensor.torfahrtsschuppen_raumsensor_technikraum_luftfeuchte
+        below: 60
+      - trigger: state
+        entity_id: switch.torfahrtsschuppen_zk_astra_technikraum_lueftung
+        to: "on"
+        for:
+          minutes: 120
+    action:
+      - action: switch.turn_off
+        entity_id: switch.torfahrtsschuppen_zk_astra_technikraum_lueftung

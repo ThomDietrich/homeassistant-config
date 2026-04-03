@@ -1,0 +1,102 @@
+automation:
+  - alias: Kinderzimmer Soundsystem standardmäßig auf Eingang 2 wechseln
+    id: "12345"
+    trigger:
+      - trigger: state
+        entity_id: switch.kinderzimmer_unterputzsteckdose
+        to: "on"
+    action:
+      - alias: Warte auf Boxensystem aktiv
+        wait_template: "{{ states('sensor.kinderzimmer_unterputzsteckdose_energy_power') | float(0) > 32 }}"
+        timeout:
+          minutes: 2
+        continue_on_timeout: false
+      - alias: Pinge zMote
+        action: homeassistant.update_entity
+        entity_id: binary_sensor.kinderzimmer_zmote_ping
+      - alias: Warte auf zMote
+        wait_template: "{{ not is_state('button.kinderzimmer_teufel_soundsystem_input_ir', 'unavailable') }}"
+        timeout:
+          minutes: 2
+        continue_on_timeout: false
+      - action: button.press
+        entity_id: button.kinderzimmer_teufel_soundsystem_input_ir
+
+  - alias: Kinderzimmer Licht Taster links unten Schaltet Beamer ein
+    trigger:
+      - trigger: device
+        domain: mqtt
+        device_id: 6a19e5bf596a51352f9ccf398710e027
+        type: action
+        subtype: 3_double
+    condition:
+      - alias: "Beamer ist nicht aktiv und Verbrauch ist nahe Null"
+        condition: numeric_state
+        entity_id: sensor.kinderzimmer_beamer_schaltmodul_energy_power
+        below: 10
+    action:
+      - action: switch.turn_on
+        entity_id: switch.kinderzimmer_beamer_schaltmodul
+      - action: switch.turn_on
+        entity_id: switch.kinderzimmer_teufel_soundsystem
+      - delay:
+          seconds: 1
+      - alias: Pinge zMote
+        action: homeassistant.update_entity
+        entity_id: binary_sensor.kinderzimmer_zmote_ping
+      - alias: Warte auf zMote
+        wait_template: "{{ not is_state('button.kinderzimmer_epson_beamer_power_ir', 'unavailable') }}"
+        timeout:
+          minutes: 5
+        continue_on_timeout: false
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 1
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 1
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 1
+      - action: button.press
+        entity_id: button.kinderzimmer_teufel_soundsystem_input_ir
+      - action: media_player.turn_on
+        entity_id: media_player.shield_android_tv
+
+  - alias: Kinderzimmer Licht Taster links unten Schaltet Beamer aus
+    trigger:
+      - trigger: device
+        domain: mqtt
+        device_id: 6a19e5bf596a51352f9ccf398710e027
+        type: action
+        subtype: 3_double
+    condition:
+      - alias: "Beamer ist aktiv und verbaucht Strom"
+        condition: numeric_state
+        entity_id: sensor.kinderzimmer_beamer_schaltmodul_energy_power
+        above: 10
+    action:
+      - alias: Warte auf zMote
+        wait_template: "{{ not is_state('button.kinderzimmer_epson_beamer_power_ir', 'unavailable') }}"
+        timeout:
+          minutes: 5
+        continue_on_timeout: false
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 1
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 1
+      - action: button.press
+        entity_id: button.kinderzimmer_epson_beamer_power_ir
+      - delay:
+          seconds: 5
+      - action: switch.turn_off
+        entity_id: switch.kinderzimmer_beamer_schaltmodul
+      - action: switch.turn_off
+        entity_id: switch.kinderzimmer_teufel_soundsystem
