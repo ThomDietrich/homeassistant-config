@@ -15,8 +15,8 @@ advanced:
   log_level: info
   channel: 25
   network_key: '!secret network_key'
-  pan_id: '!secret pan_id'
-  ext_pan_id: '!secret ext_pan_id'
+  pan_id: 34818
+  ext_pan_id: [241, 173, 200, 170, 137, 53, 255, 49]
   transmit_power: 20
   last_seen: ISO_8601_local
 frontend:
