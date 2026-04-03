@@ -1,0 +1,55 @@
+input_number:
+  gartenbewaesserung_beet_2_tropfer_anzahl:
+    name: Gartenbewaesserung Beet 2 Anzahl Tropfer
+    icon: mdi:view-grid-plus-outline
+    min: 1
+    max: 999
+    step: 1
+    initial: 127
+    mode: box
+
+  gartenbewaesserung_beet_2_tropfer_leistung:
+    name: Gartenbewaesserung Beet 2 Volumenstrom je Tropfer
+    unit_of_measurement: "L/h"
+    icon: mdi:water-pump
+    min: 0
+    max: 999
+    #step: 0.1
+    initial: 2.75 # gemessen
+    mode: box
+
+  gartenbewaesserung_beet_2_area:
+    name: Gartenbewaesserung Beet 2 Fläche
+    unit_of_measurement: "m²"
+    icon: mdi:texture-box
+    min: 0
+    max: 999
+    #step: 0.1
+    initial: 42 # 6*7m
+    mode: box
+
+template:
+  - sensor:
+      - name: Gartenbewaesserung Beet 2 Volumenstrom
+        unique_id: unique_id__gartenbewaesserung_beet_2_volumenstrom
+        state_class: measurement
+        unit_of_measurement: "L/h"
+        icon: mdi:waves-arrow-right
+        state: >
+          {{ states('input_number.gartenbewaesserung_beet_2_tropfer_anzahl') | int(0) * states('input_number.gartenbewaesserung_beet_2_tropfer_leistung') | float(0) }}
+
+      - name: Gartenbewaesserung Beet 2 Effektive Regenrate
+        unique_id: unique_id__gartenbewaesserung_beet_2_regenrate
+        state_class: measurement
+        unit_of_measurement: "mm/h"
+        icon: mdi:waves-arrow-up
+        state: >
+          {{ (states('sensor.gartenbewaesserung_beet_2_volumenstrom') | float(0) / states('input_number.gartenbewaesserung_beet_2_area') | float(0)) | round(1) }}
+
+  - binary_sensor:
+      - name: Gartenbewaesserung Pumpe aktiv
+        unique_id: unique_id__gartenbewaesserung_pumpe_aktiv
+        state: >
+          {{ states('sensor.gartenbewaesserung_pumpe_energy_power') | float(0) > 10 }}
+        availability: >
+          {{ has_value('sensor.gartenbewaesserung_pumpe_energy_power') }}

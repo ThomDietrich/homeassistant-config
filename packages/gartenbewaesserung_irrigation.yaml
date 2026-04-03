@@ -1,0 +1,111 @@
+irrigation_unlimited:
+  controllers:
+    - name: "Gartenbewaesserung"
+      preamble:
+        minutes: 2
+        seconds: 30
+      postamble:
+        minutes: 2
+        seconds: 30
+
+      zones:
+        - zone_id: "1"
+          name: Zone 1
+          entity_id: switch.gartenbewaesserung_astra_ventil_1
+        - zone_id: "2"
+          name: Zone 2
+          entity_id: switch.gartenbewaesserung_astra_ventil_2
+        - zone_id: "3"
+          name: Zone 3
+          entity_id: switch.gartenbewaesserung_astra_ventil_3
+        - zone_id: "4"
+          name: Zone 4
+          entity_id: switch.gartenbewaesserung_astra_ventil_4
+
+      sequences:
+        - schedules:
+            - name: "Sonnnenaufgang"
+              time:
+                sun: "sunrise"
+                after:
+                  minutes: 60
+          delay:
+            minutes: 1 # in beteen zones
+          zones:
+            - zone_id: 2
+              duration:
+                minutes: 60
+            - zone_id: 3
+              duration:
+                minutes: 60
+            - zone_id: 4
+              duration:
+                minutes: 30
+
+################################################################################
+
+input_number:
+  gartenbewaesserung_smart_irrigation_offset_minutes:
+    name: Gartenbewässerung Smart Irrigation Offset (Minutes)
+    unit_of_measurement: "min"
+    icon: mdi:clock-plus-outline
+    min: 0
+    max: 60
+    step: 1
+    #initial: 30
+    #mode: box
+
+################################################################################
+
+# automation:
+#   - alias: Gartenbewaesserung Pumpe ein (folge irrigation unlimited Master)
+#     trigger:
+#       - trigger: state
+#         entity_id: binary_sensor.irrigation_unlimited_c1_m
+#         to: "on"
+#     action:
+#       - action: switch.turn_on
+#         entity_id: switch.gartenbewaesserung_pumpe
+
+#   - alias: Gartenbewaesserung Pumpe aus (folge irrigation unlimited Master) inkl Druckabbau
+#     trigger:
+#       - trigger: state
+#         entity_id: binary_sensor.irrigation_unlimited_c1_m
+#         to: "off"
+#     action:
+#       - action: switch.turn_off
+#         entity_id: switch.gartenbewaesserung_pumpe
+#       - action: switch.turn_on
+#         entity_id: switch.gartenbewaesserung_astra_ventil_2
+#       - delay:
+#           minutes: 10
+#       - action: switch.turn_off
+#         entity_id: switch.gartenbewaesserung_astra_ventil_2
+
+  ##############################################################################
+
+  # - alias: Gartenbewaesserung Zeit über Smart Irrigation anpassen
+  #   mode: single
+  #   trigger:
+  #     - trigger: time
+  #       at: "23:30"
+  #   action:
+  #     - action: irrigation_unlimited.adjust_time
+  #       data:
+  #         actual: >-
+  #           {{
+  #             timedelta(
+  #               seconds = 60 * states('input_number.gartenbewaesserung_smart_irrigation_offset_minutes') | int(0)
+  #               + 10 * states('sensor.smart_irrigation_daily_adjusted_run_time') | int(0)
+  #             )
+  #           }}
+  #         entity_id: binary_sensor.irrigation_unlimited_c1_z2
+
+  # - alias: Gartenbewaesserung Zeit über Smart Irrigation bucket reset
+  #   trigger:
+  #     - trigger: state
+  #       entity_id: binary_sensor.irrigation_unlimited_c1_m
+  #       from: "on"
+  #       to: "off"
+  #   action:
+  #     - action: smart_irrigation.smart_irrigation_gemischtes_beet_reset_bucket
