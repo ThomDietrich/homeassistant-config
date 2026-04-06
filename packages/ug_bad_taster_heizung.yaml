@@ -38,9 +38,10 @@ automation:
           trigger.to_state.attributes.event_type == 'brightness_move_up' or
           trigger.to_state.attributes.event_type == 'brightness_move_down' }}
     actions:
-      - action: button.press
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          entity_id: button.heizungsregelung_warmwasser_manuell_bereiten
+          zieltemperatur: >
+            {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_manuell') | float(50) }}
       - action: switch.turn_on
         entity_id: switch.heizungsregelung_warmwasser_zirkulationspumpe
       - action: esphome.haus_uv_astra_play_rtttl

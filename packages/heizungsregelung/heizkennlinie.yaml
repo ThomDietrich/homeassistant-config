@@ -89,23 +89,6 @@ template:
         availability: >
           {{ has_value('sensor.keller_zh_heizkreis_volumenstrom_mittelwert') }}
 
-      # - name: Keller ZH Heizkreis Temperaturdifferenz
-      #   unique_id: uniqueid__keller_zh_heizkreis_temperaturdifferenz
-      #   unit_of_measurement: "K"
-      #   state_class: measurement
-      #   device_class: temperature
-      #   state: >
-      #     {% set vorlauf = states('sensor.keller_zh_heizkreis_vorlauf') | float(0) %}
-      #     {% set ruecklauf = states('sensor.keller_zh_heizkreis_ruecklauf') | float(0) %}
-      #     {{ (vorlauf - ruecklauf) | round(1, default=0) }}
-      #   availability: >
-      #     {{ states('sensor.keller_zh_heizkreis_vorlauf') not in [ 'unavailable', 'none', 'unknown' ] and states('sensor.keller_zh_heizkreis_ruecklauf') not in [ 'unavailable', 'none', 'unknown' ] }}
-      #   attributes:
-      #     vorlauf_temperatur: >
-      #       {{ states('sensor.keller_zh_heizkreis_vorlauf') | float(0) | round(2) }}
-      #     ruecklauf_temperatur: >
-      #       {{ states('sensor.keller_zh_heizkreis_ruecklauf') | float(0) | round(2) }}
-
       - name: Keller ZH Heizung Heizkennlinie theoretisch
         unique_id: unique_id__keller_zh_heizung_heizkennlinie_theoretisch
         unit_of_measurement: "°C"
@@ -169,24 +152,34 @@ automation:
       - trigger: state
         entity_id: sensor.keller_zh_heizung_heizkennlinie_sollwert
       - trigger: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-      - trigger: state
         entity_id: input_boolean.keller_zh_heizung_automation
         to: "on"
+      - alias: "ESP Neustart"
+        trigger: state
+        entity_id: binary_sensor.keller_zh_regelung_esp_device_status
+        to: "on"
+      - alias: "HA Neustart"
+        trigger: homeassistant
+        event: start
     condition:
       - alias: "Automation aktiv"
         condition: state
         entity_id: input_boolean.keller_zh_heizung_automation
         state: "on"
-      - alias: "Gastherme nicht in Warmwasserbereitung"
-        condition: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        state: "Heizen"
     action:
-      - action: input_number.set_value
+      - action: esphome.keller_zh_regelung_heizung_anfordern
         data:
-          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
-          value: "{{ states('sensor.keller_zh_heizung_heizkennlinie_sollwert') | float(0) }}"
+          sollwert: "{{ states('sensor.keller_zh_heizung_heizkennlinie_sollwert') | float(0) }}"
+
+  - alias: Keller ZH Heizung deaktiviert
+    trigger:
+      - trigger: state
+        entity_id: input_boolean.keller_zh_heizung_automation
+        to: "off"
+    action:
+      - action: esphome.keller_zh_regelung_heizung_anfordern
+        data:
+          sollwert: 0
 
   - alias: Keller ZH Heizung folgt Heizkennlinie (Fehlerfall)
     mode: restart
@@ -204,15 +197,10 @@ automation:
         condition: state
         entity_id: input_boolean.keller_zh_heizung_automation
         state: "on"
-      - alias: "Gastherme nicht in Warmwasserbereitung"
-        condition: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        state: "Heizen"
     action:
-      - action: input_number.set_value
+      - action: esphome.keller_zh_regelung_heizung_anfordern
         data:
-          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
-          value: 45
+          sollwert: 45
       - action: script.notify_warnung
         data:
           msg_title: "AWF1877 Keller ZH"

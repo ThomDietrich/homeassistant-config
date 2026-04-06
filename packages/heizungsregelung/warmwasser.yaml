@@ -21,14 +21,6 @@ input_datetime:
     #initial: "17:00"
 
 input_number:
-  keller_zh_warmwasser_temperatur_zielwert_intern:
-    name: Keller ZH Warmwasser Interne Momentansteuerung Sollwert/Zielwert
-    unit_of_measurement: "°C"
-    icon: mdi:thermometer-alert
-    min: 0
-    max: 99
-    step: 0.1
-
   keller_zh_warmwasser_temperatur_sollwert_t1:
     name: Keller ZH Warmwasser Sollwert Temperatur Abends (t1)
     unit_of_measurement: "°C"
@@ -85,135 +77,12 @@ input_number:
     step: 0.5
     initial: 30
     mode: box
-  keller_zh_warmwasser_temperatur_max:
-    name: Keller ZH Warmwasser Maximale Speichertemperatur
-    unit_of_measurement: "°C"
-    icon: mdi:thermometer-alert
-    min: 40
-    max: 90
-    step: 1
-    initial: 70
-    mode: box
-
-template:
-  - button:
-      - name: Keller ZH Warmwasser Manuell Bereiten
-        unique_id: unique_id__keller_zh_warmwasser_manuell
-        press:
-          action: script.keller_zh_warmwasserbereitung_ein
-          data:
-            sollwert: >
-              {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_manuell') | float(0) }}
-  - sensor:
-      - name: Keller ZH Warmwasser Temperatur Zielwert
-        unique_id: unique_id__keller_zh_warmwasser_temperatur_zielwert
-        unit_of_measurement: "°C"
-        icon: mdi:thermometer-alert
-        state: >
-          {{ states('input_number.keller_zh_warmwasser_temperatur_zielwert_intern') | float(0) }}
-        availability: >
-          {{ states('input_number.keller_zh_warmwasser_temperatur_zielwert_intern') not in [ 'unavailable', 'none', 'unknown' ] }}
 
 ################################################################################
-
-script:
-  keller_zh_warmwasserbereitung_ein:
-    alias: "Keller ZH Warmwasserbereitung ansteuern"
-    description: "Erwartet eine Solltemperatur als Eingabe. Wenn geheizt werden muss schaltet die Gastherme auf WWB um und heizt."
-    fields:
-      sollwert:
-        name: Sollwert Warmwasser Temperatur
-        description: "Das Level auf welches erhitzt werden soll"
-        required: true
-        default: 10
-        selector:
-          number:
-            min: 0
-            max: 99
-            step: 0.5
-            unit_of_measurement: "°C"
-            mode: slider
-    sequence:
-      - alias: "Prüfe ob Automation aktiv"
-        condition: state
-        entity_id: input_boolean.keller_zh_warmwasser_automation
-        state: "on"
-      - alias: "Prüfe ob Warmwasserspeicher unter Zieltemperatur"
-        condition: template
-        value_template: >
-          {{ states('sensor.keller_zh_warmwasserspeicher_temperatur_oben') | float(0) < sollwert | float(0) }}
-      - alias: "Schalte Gastherme in den Modus Warmwasserbereitung"
-        action: select.select_option
-        target:
-          entity_id: select.keller_zh_gastherme_betriebsmodus
-        data:
-          option: "Warmwasser"
-      - alias: "Setze den Sollwert der Gastherme"
-        action: input_number.set_value
-        data:
-          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
-          value: 80 # kein Effekt?
-      - alias: Speichere den Sollwert intern für die Abschaltung
-        action: input_number.set_value
-        data:
-          entity_id: input_number.keller_zh_warmwasser_temperatur_zielwert_intern
-          value: "{{ sollwert | float(0) }}"
-
-  keller_zh_warmwasserbereitung_aus:
-    alias: "Keller ZH Warmwasserbereitung beenden"
-    description: "Warmwasserbereitung beenden"
-    sequence:
-      - alias: "Prüfe ob Automation aktiv"
-        condition: state
-        entity_id: input_boolean.keller_zh_warmwasser_automation
-        state: "on"
-      - alias: "Prüfe ob Gastherme in Warmwasserbereitung"
-        condition: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        state: "Warmwasser"
-      - alias: "Setze einen sicheren Wert für die Gastherme (wird vom Heizmodus überschrieben, wenn aktiv)"
-        action: input_number.set_value
-        data:
-          entity_id: input_number.keller_zh_gastherme_sollwert_temperatur
-          value: 0
-      - alias: "Schalte Gastherme in den Modus Heizung zurück"
-        action: select.select_option
-        target:
-          entity_id: select.keller_zh_gastherme_betriebsmodus
-        data:
-          option: "Heizen"
-      - alias: "Lösche die Temperatur in der Hilfsvariable nach Beenden der WWB, für eine saubere Umgebung"
-        action: input_number.set_value
-        data:
-          entity_id: input_number.keller_zh_warmwasser_temperatur_zielwert_intern
-          value: "0"
-
+# Zeitplan-Automationen — senden WWB-Anforderungen an den ESP
 ################################################################################
+
 automation:
-  - alias: Keller ZH Warmwasserbereitung aus (Solltemperatur)
-    trigger:
-      - trigger: numeric_state
-        entity_id: sensor.keller_zh_warmwasserspeicher_temperatur_oben
-        above: input_number.keller_zh_warmwasser_temperatur_zielwert_intern
-      - trigger: numeric_state
-        # Fallback option to additionally catch edge-cases where the value was already above.
-        entity_id: sensor.keller_zh_warmwasserspeicher_temperatur_oben
-        value_template: "{{ state.state | float - 2 }}"
-        above: input_number.keller_zh_warmwasser_temperatur_zielwert_intern
-    condition:
-      - alias: "Automation aktiv"
-        condition: state
-        entity_id: input_boolean.keller_zh_warmwasser_automation
-        state: "on"
-      - alias: "Gastherme in Warmwasserbereitung"
-        condition: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        state: "Warmwasser"
-    action:
-      - action: script.keller_zh_warmwasserbereitung_aus
-
-  ################################################################################
-
   - alias: Keller ZH Gastherme Warmwasserbereitung Abends
     trigger:
       - trigger: time
@@ -227,9 +96,9 @@ automation:
         condition: time
         weekday: [mon, tue, wed, thu, fri, sun]
     action:
-      - action: script.keller_zh_warmwasserbereitung_ein
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          sollwert: >
+          zieltemperatur: >
             {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_t1') | float(0) }}
 
   - alias: Keller ZH Gastherme Warmwasserbereitung Abends (Legionellenschutz)
@@ -245,14 +114,14 @@ automation:
         condition: time
         weekday: sat
     action:
-      - action: script.keller_zh_warmwasserbereitung_ein
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          sollwert: >
+          zieltemperatur: >
             {{ states('input_number.keller_zh_warmwasser_temperatur_legionellenschutz') | float(0) }}
       - action: script.notify_info
         data:
           msg_title: "AWF1877 Keller ZH"
-          msg_text: "Warmwasserbereitung aktiv (Legionellenschutz)"
+          msg_text: "Warmwasserbereitung angefordert (Legionellenschutz)"
 
   - alias: Keller ZH Gastherme Warmwasserbereitung Morgens
     trigger:
@@ -264,9 +133,9 @@ automation:
         entity_id: input_boolean.keller_zh_warmwasser_automation
         state: "on"
     action:
-      - action: script.keller_zh_warmwasserbereitung_ein
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          sollwert: >
+          zieltemperatur: >
             {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_t2') | float(0) }}
 
   - alias: Keller ZH Gastherme Warmwasserbereitung bei Erreichen des Schwellwerts
@@ -284,14 +153,14 @@ automation:
         after: input_datetime.keller_zh_warmwasserbereitung_t2
         before: "21:00:00"
     action:
-      - action: script.keller_zh_warmwasserbereitung_ein
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          sollwert: >
+          zieltemperatur: >
             {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_t2') | float(0) }}
       - action: script.notify_info
         data:
           msg_title: "AWF1877 Keller ZH"
-          msg_text: "Warmwasserbereitung aktiv (Außerplanmäßig bei Schwellwert)"
+          msg_text: "Warmwasserbereitung angefordert (Außerplanmäßig bei Schwellwert)"
 
   - alias: Keller ZH Gastherme Warmwasserbereitung bei Erreichen des Minimalwerts
     trigger:
@@ -304,53 +173,55 @@ automation:
         entity_id: input_boolean.keller_zh_warmwasser_automation
         state: "on"
     action:
-      - action: script.keller_zh_warmwasserbereitung_ein
+      - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
-          sollwert: >
+          zieltemperatur: >
             {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_t2') | float(0) }}
       - action: script.notify_info
         data:
           msg_title: "AWF1877 Keller ZH"
-          msg_text: "Warmwasserbereitung aktiv (Außerplanmäßig bei niedriger Speichertemperatur)"
+          msg_text: "Warmwasserbereitung angefordert (Außerplanmäßig bei niedriger Speichertemperatur)"
 
   ################################################################################
+  # Benachrichtigungen — reagiert auf WWB-Ergebnis vom ESP
+  ################################################################################
 
-  - alias: Keller ZH Warmwasserbereitung aus (Maximale Laufzeit)
+  - alias: Keller ZH Warmwasserbereitung Ergebnis Benachrichtigung
     trigger:
       - trigger: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        to: "Warmwasser"
-        for:
-          minutes: 25
-    condition:
-      - alias: "Automation aktiv"
-        condition: state
-        entity_id: input_boolean.keller_zh_warmwasser_automation
-        state: "on"
+        entity_id: sensor.keller_zh_gastherme_warmwasserbereitung_ergebnis
+        not_to:
+          - "Bereit"
+          - "Aktiv"
+          - "Zieltemperatur erreicht"
+          - "unavailable"
+          - "unknown"
     action:
-      - action: script.keller_zh_warmwasserbereitung_aus
-      - action: script.notify_info
-        data:
-          msg_title: "AWF1877 Keller ZH"
-          msg_text: "Warmwasserbereitung abgebrochen, Maximale Laufzeit überschritten!"
-
-  - alias: Keller ZH Warmwasserbereitung aus (Maximale Speichertemperatur)
-    trigger:
-      - trigger: numeric_state
-        entity_id: sensor.keller_zh_warmwasserspeicher_temperatur_oben
-        above: input_number.keller_zh_warmwasser_temperatur_max
-    condition:
-      - alias: "Automation aktiv"
-        condition: state
-        entity_id: input_boolean.keller_zh_warmwasser_automation
-        state: "on"
-      - alias: "Gastherme in Warmwasserbereitung"
-        condition: state
-        entity_id: sensor.keller_zh_gastherme_kreislauf
-        state: "Warmwasser"
-    action:
-      - action: script.keller_zh_warmwasserbereitung_aus
-      - action: script.notify_warnung
-        data:
-          msg_title: "AWF1877 Keller ZH"
-          msg_text: "Warmwasserbereitung abgebrochen, maximale Speichertemperatur erreicht!"
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: sensor.keller_zh_gastherme_warmwasserbereitung_ergebnis
+                state: "Sensorausfall"
+            sequence:
+              - action: script.notify_warnung
+                data:
+                  msg_title: "AWF1877 Keller ZH"
+                  msg_text: "Warmwasserbereitung abgebrochen: Sensorausfall (Warmwasserspeicher oben)!"
+          - conditions:
+              - condition: state
+                entity_id: sensor.keller_zh_gastherme_warmwasserbereitung_ergebnis
+                state: "Maximale Speichertemperatur"
+            sequence:
+              - action: script.notify_warnung
+                data:
+                  msg_title: "AWF1877 Keller ZH"
+                  msg_text: "Warmwasserbereitung abgebrochen: Maximale Speichertemperatur erreicht!"
+          - conditions:
+              - condition: state
+                entity_id: sensor.keller_zh_gastherme_warmwasserbereitung_ergebnis
+                state: "Maximale Laufzeit"
+            sequence:
+              - action: script.notify_info
+                data:
+                  msg_title: "AWF1877 Keller ZH"
+                  msg_text: "Warmwasserbereitung beendet: Maximale Laufzeit überschritten."
