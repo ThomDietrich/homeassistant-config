@@ -1,0 +1,154 @@
+# ======================================================================================================================
+# Gastherme Betriebszustandserkennung aus elektrischer Leistungsaufnahme
+# ======================================================================================================================
+#
+# Quelle:     Tasmota Zwischensteckmodul (sensor.keller_gastherme_strom_energy_power)
+# Validierung: 30 Tage (Maerz/April 2026), 719 Stunden-Statistiken + 1971 Rohmesswerte
+#
+# Referenz:   Buderus Logamax plus GB162-15/25/35 V3, Installations- und Wartungsanleitung 6720806997 (2015/04)
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# Buderus-Terminologie
+# ----------------------------------------------------------------------------------------------------------------------
+#   "Heizungspumpe" [24]      Interne Umwaelzpumpe im Kessel (Bild 2, Bild 3 [4])
+#   "Heizbetrieb"             Normaler Betrieb mit Brenner + Heizungspumpe (Kap. 6.4, 6.5)
+#   "Warmwasserbereitung"     3-Wege-Ventil auf Speicher umgeschaltet (Kap. 4.7.7, 6.6 Einstellung C1)
+#   "Pumpennachlaufzeit"      Heizungspumpe laeuft nach Brennerabschaltung weiter (Kap. 6.6, F5, Default 5 min)
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# LEDs am Bedienfeld Logamatic BC10 (Bild 33, Kap. 6.1)
+# ----------------------------------------------------------------------------------------------------------------------
+#   LED "Brenner" [6]              Leuchtet sobald der Brenner aktiv ist
+#   LED "Waermeanforderung" [7]    Leuchtet sobald eine Waermeanforderung des Reglers entsteht
+#   LED "Warmwasserbereitung" [11] Leuchtet sobald eine Waermeanforderung fuer Warmwasser entsteht
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# Elektrische Daten (Kap. 2.6.1 Tab. 2, GB162-25)
+# ----------------------------------------------------------------------------------------------------------------------
+#   Versorgungsspannung: 230V/50Hz, Sicherung IP X4D
+#   Elektrische Leistungsaufnahme Volllast/Teillast: 70/27 W
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# Leistungscluster (gemessen, 30 Tage validiert)
+# ----------------------------------------------------------------------------------------------------------------------
+#   Zustand                    Leistung   Beschreibung
+#   AUS                        <  10W     Nur Steuerungselektronik
+#   HEIZUNGSPUMPE AKTIV        10-21W     Heizungspumpe laeuft, Brenner aus (Nachlauf/Bereitschaft)
+#   HEIZBETRIEB AKTIV          22-40W     Brenner modulierend + Heizungspumpe (passt zu 27-70W lt. Datenblatt)
+#   WARMWASSERBEREITUNG AKTIV  >  45W     3-Wege-Ventil umgeschaltet, Pumpe Vollast, Peaks bis 150W
+#
+#   Natuerliche Taeler in der Verteilung bei ~10W, ~21W und ~41W bilden die Clustergrenzen.
+#   Hysterese von 2W verhindert Flattern an den Raendern.
+#
+# ----------------------------------------------------------------------------------------------------------------------
+# Zuordnung Betriebszustand → LEDs (erwartet)
+# ----------------------------------------------------------------------------------------------------------------------
+#   Betriebszustand                                  Pumpe   Brenner   Waermeanf.   WWB
+#   Aus                                              -       -         -            -
+#   Heizungspumpe aktiv                              EIN     -         EIN          -
+#   Heizbetrieb (Heizungspumpe und Brenner) aktiv    EIN     EIN       EIN          -
+#   Warmwasserbereitung aktiv                        -       EIN       -            EIN
+
+template:
+  # Betriebszustand (Zustandsmaschine aus el. Leistungsaufnahme)
+  - trigger:
+      - trigger: homeassistant
+        event: start
+      - trigger: state
+        entity_id: sensor.keller_gastherme_strom_energy_power
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: Keller ZH Gastherme Betriebszustand
+        unique_id: uniqueid__keller_zh_gastherme_betriebszustand
+        icon: >
+          {% set z = this.state %}
+          {% if z == 'Warmwasserbereitung aktiv' %}mdi:water-thermometer
+          {% elif z == 'Heizbetrieb (Heizungspumpe und Brenner) aktiv' %}mdi:gas-burner
+          {% elif z == 'Heizungspumpe aktiv' %}mdi:pump
+          {% else %}mdi:power-sleep
+          {% endif %}
+        state: >
+          {% set power = states('sensor.keller_gastherme_strom_energy_power') | float(0) %}
+          {% set raw_prev = this.state | default('Aus') %}
+          {% set prev = raw_prev if raw_prev in ['Aus', 'Heizungspumpe aktiv', 'Heizbetrieb (Heizungspumpe und Brenner) aktiv', 'Warmwasserbereitung aktiv'] else 'Aus' %}
+          {% if power < 8 %}
+            Aus
+          {% elif power > 12 and power < 20 %}
+            Heizungspumpe aktiv
+          {% elif power > 23 and power < 42 %}
+            Heizbetrieb (Heizungspumpe und Brenner) aktiv
+          {% elif power > 45 %}
+            Warmwasserbereitung aktiv
+          {% elif prev == 'Aus' and power >= 10 %}
+            Heizungspumpe aktiv
+          {% elif prev == 'Heizungspumpe aktiv' and power >= 22 %}
+            Heizbetrieb (Heizungspumpe und Brenner) aktiv
+          {% elif prev == 'Heizbetrieb (Heizungspumpe und Brenner) aktiv' and power <= 21 %}
+            Heizungspumpe aktiv
+          {% elif prev == 'Warmwasserbereitung aktiv' and power <= 42 %}
+            Heizbetrieb (Heizungspumpe und Brenner) aktiv
+          {% else %}
+            {{ prev }}
+          {% endif %}
+        availability: >
+          {{ states('sensor.keller_gastherme_strom_energy_power') not in ['unavailable', 'unknown'] }}
+
+  # Abgeleitete binary_sensors (eigener Trigger auf Betriebszustand)
+  - trigger:
+      - trigger: state
+        entity_id: sensor.keller_zh_gastherme_betriebszustand
+        not_to:
+          - "unavailable"
+          - "unknown"
+    binary_sensor:
+      # Heizungspumpe: laeuft in Zustaenden "Heizungspumpe aktiv" und "Heizbetrieb (Heizungspumpe und Brenner) aktiv"
+      - name: Keller ZH Gastherme Heizungspumpe
+        unique_id: uniqueid__keller_zh_gastherme_heizungspumpe
+        device_class: running
+        icon: mdi:pump
+        state: >
+          {% set z = states('sensor.keller_zh_gastherme_betriebszustand') %}
+          {{ z in ['Heizungspumpe aktiv', 'Heizbetrieb (Heizungspumpe und Brenner) aktiv'] }}
+        availability: >
+          {{ states('sensor.keller_zh_gastherme_betriebszustand') not in ['unavailable', 'unknown'] }}
+
+      # LED "Brenner" (BC10 [6]): leuchtet sobald der Brenner aktiv ist
+      - name: Keller ZH Gastherme LED Brenner
+        unique_id: uniqueid__keller_zh_gastherme_led_brenner
+        icon: >
+          {% if is_state(this.entity_id, 'on') %}mdi:gas-burner
+          {% else %}mdi:fire-off
+          {% endif %}
+        state: >
+          {% set z = states('sensor.keller_zh_gastherme_betriebszustand') %}
+          {{ z in ['Heizbetrieb (Heizungspumpe und Brenner) aktiv', 'Warmwasserbereitung aktiv'] }}
+        availability: >
+          {{ states('sensor.keller_zh_gastherme_betriebszustand') not in ['unavailable', 'unknown'] }}
+
+      # LED "Waermeanforderung" (BC10 [7]): leuchtet sobald eine Waermeanforderung des Reglers entsteht
+      - name: Keller ZH Gastherme LED Waermeanforderung
+        unique_id: uniqueid__keller_zh_gastherme_led_waermeanforderung
+        icon: >
+          {% if is_state(this.entity_id, 'on') %}mdi:radiator
+          {% else %}mdi:radiator-off
+          {% endif %}
+        state: >
+          {% set z = states('sensor.keller_zh_gastherme_betriebszustand') %}
+          {{ z in ['Heizungspumpe aktiv', 'Heizbetrieb (Heizungspumpe und Brenner) aktiv'] }}
+        availability: >
+          {{ states('sensor.keller_zh_gastherme_betriebszustand') not in ['unavailable', 'unknown'] }}
+
+      # LED "Warmwasserbereitung" (BC10 [11]): leuchtet sobald eine Waermeanforderung fuer Warmwasser entsteht
+      - name: Keller ZH Gastherme LED Warmwasserbereitung
+        unique_id: uniqueid__keller_zh_gastherme_led_warmwasserbereitung
+        icon: >
+          {% if is_state(this.entity_id, 'on') %}mdi:water-thermometer
+          {% else %}mdi:water-thermometer-outline
+          {% endif %}
+        state: >
+          {% set z = states('sensor.keller_zh_gastherme_betriebszustand') %}
+          {{ z == 'Warmwasserbereitung aktiv' }}
+        availability: >
+          {{ states('sensor.keller_zh_gastherme_betriebszustand') not in ['unavailable', 'unknown'] }}
