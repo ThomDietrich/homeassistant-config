@@ -1,4 +1,17 @@
+# evcc — MQTT-Bridge zu Home Assistant
+#
+# evcc publiziert seinen kompletten State unter `evcc/...` (siehe evcc.yaml
+# config.mqtt). Hier werden die für HA relevanten Topics als Entitäten
+# eingebunden:
+#   - select:        Modus (off/now/minpv/pv), Phasenanzahl (0/1/3)
+#   - number:        Min/Max-Stromstärke, Buffer-/Priority-SoC, Residualleistung
+#   - sensor:        Lade-/PV-/Netz-/Hausleistungen, kumulierte Energien, Savings
+#   - binary_sensor: Loadpoint enabled/connected/charging
+#
+# Verfügbarkeit aller Entitäten hängt am LWT-Topic `evcc/status`.
+
 mqtt:
+  # --- Selects ---------------------------------------------------------------
   select:
     - name: evcc_mode
       unique_id: uniqueid__evcc_mode_select
@@ -23,9 +36,9 @@ mqtt:
         - "1"
         - "3"
 
-  #############################################################################
-
+  # --- Sensors ---------------------------------------------------------------
   sensor:
+    # Loadpoint power & energy
     - name: evcc_charge_power_w
       unique_id: uniqueid__evcc_charge_power_w
       icon: mdi:car-electric
@@ -59,8 +72,7 @@ mqtt:
       unit_of_measurement: "kWh"
       availability_topic: "evcc/status"
 
-    #############################################################################
-
+    # Loadpoint phases & duration
     - name: evcc_phases_active
       unique_id: uniqueid__evcc_phases_active
       icon: mdi:backburger
@@ -76,8 +88,7 @@ mqtt:
       unit_of_measurement: "s"
       availability_topic: "evcc/status"
 
-    #############################################################################
-
+    # Loadpoint per-phase currents
     - name: evcc_charge_current_l1_a
       unique_id: uniqueid__evcc_charge_current_l1_a
       icon: mdi:current-ac
@@ -102,8 +113,9 @@ mqtt:
       unit_of_measurement: "A"
       availability_topic: "evcc/status"
 
-    #############################################################################
-
+    # Site power flow
+    # NOTE: unique_id 'uniqueid__evcc_pc_power_w' contains a legacy typo (pc
+    # instead of pv); kept as-is to avoid re-registering the entity.
     - name: evcc_pv_power_w
       unique_id: uniqueid__evcc_pc_power_w
       icon: mdi:home-lightning-bolt-outline
@@ -136,8 +148,7 @@ mqtt:
       unit_of_measurement: "W"
       availability_topic: "evcc/status"
 
-    #############################################################################
-
+    # Savings
     - name: evcc_savings_self_consumption_percent
       unique_id: uniqueid__evcc_savings_self_consumption_percent
       icon: mdi:cash-multiple
@@ -154,8 +165,7 @@ mqtt:
       unit_of_measurement: "€"
       availability_topic: "evcc/status"
 
-    #############################################################################
-
+  # --- Binary sensors --------------------------------------------------------
   binary_sensor:
     - name: evcc_loadpoint_enabled
       unique_id: uniqueid__evcc_loadpoint_enabled
@@ -163,7 +173,6 @@ mqtt:
       state_topic: "evcc/loadpoints/1/enabled"
       payload_on: "true"
       payload_off: "false"
-      #device_class: problem
       availability_topic: "evcc/status"
 
     - name: evcc_loadpoint_connected
@@ -172,7 +181,6 @@ mqtt:
       state_topic: "evcc/loadpoints/1/connected"
       payload_on: "true"
       payload_off: "false"
-      #device_class: problem
       availability_topic: "evcc/status"
 
     - name: evcc_loadpoint_charging
@@ -181,11 +189,9 @@ mqtt:
       state_topic: "evcc/loadpoints/1/charging"
       payload_on: "true"
       payload_off: "false"
-      #device_class: problem
       availability_topic: "evcc/status"
 
-  #############################################################################
-
+  # --- Numbers (UI-controllable) --------------------------------------------
   number:
     - name: evcc_min_current
       unique_id: uniqueid__evcc_min_current
@@ -236,13 +242,14 @@ mqtt:
       command_topic: "evcc/site/residualPower/set"
       availability_topic: "evcc/status"
       min: -5000
-      max: +5000
+      max: 5000
       unit_of_measurement: "W"
 
-#############################################################################
+################################################################################
+
 homeassistant:
   customize:
     number.evcc_min_current:
-      friendly_name: "Garage Wallbox Minimale Stromstärke"
+      friendly_name: Garage Wallbox Minimale Stromstärke
     select.evcc_mode:
-      friendly_name: "Garage EVCC Modus"
+      friendly_name: Garage EVCC Modus

@@ -16,7 +16,6 @@ input_number:
     min: 1
     max: 999
     step: 1
-    #initial: 20
     mode: box
 
   taubenfuetterung_gramm_pro_taube:
@@ -25,7 +24,6 @@ input_number:
     min: 1
     max: 999
     step: 1
-    #initial: 30
     mode: box
 
   taubenfuetterung_futterbedarf_taeglich_anpassung:
@@ -34,7 +32,6 @@ input_number:
     min: 0
     max: 999
     step: 1
-    #initial: 30
     mode: box
 
 template:
@@ -50,14 +47,14 @@ template:
 
 automation:
   - alias: Taubenfuetterung zum Morgen
-    trigger:
+    triggers:
       - trigger: time
         at: input_datetime.taubenfuetterung_uhrzeit_1
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.taubenfuetterung_automation
         state: "on"
-    action:
+    actions:
       - action: esphome.taubenfutterspender_output
         data:
           timeout_sec: 60
@@ -65,33 +62,33 @@ automation:
           offset_g: "{{ states('input_number.taubenfuetterung_futterbedarf_taeglich_anpassung') | int(0) }}"
 
   - alias: Taubenfuetterung Benachrichtigung bei ungenügender Fütterung
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.taubenfutterspender_last_run_duration
         above: 58
-    action:
+    actions:
       - action: notify.thomas_plus
         data:
           title: Taubenfutterspender
           message: Weniger Futter als geplant ausgegeben (Verstopfung oder Leer?). Bitte prüfen.
 
   - alias: Taubenfuetterung Benachrichtigung bei niedriger Ausgabegeschwindigkeit
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.taubenfutterspender_last_run_speed
         below: 5
-    condition:
+    conditions:
       - condition: numeric_state
         entity_id: sensor.taubenfutterspender_last_run_duration
         below: 58
-    action:
+    actions:
       - action: notify.thomas_plus
         data:
           title: Taubenfutterspender
           message: Futter wurde ungewöhnlich langsam ausgegeben (Verstopfung?). Bitte prüfen.
 
   - alias: Taubenfuetterung Benachrichtigung bei leer werdendem Vorrat
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.taubenfutterspender_storage
         below: 800
@@ -102,24 +99,24 @@ automation:
         below: 300
         for:
           minutes: 5
-    action:
+    actions:
       - action: notify.thomas_plus
         data:
           title: Taubenfutterspender
-          message: Der Vorrat geht zur Neige ({{ trigger.to_state.state }}g)! Bitte auffüllen.
+          message: "Der Vorrat geht zur Neige ({{ trigger.to_state.state }}g)! Bitte auffüllen."
 
   - alias: Taubenfuetterung Benachrichtigung bei nicht erreichbarem Gerät
-    trigger:
+    triggers:
       - trigger: time
         at: input_datetime.taubenfuetterung_uhrzeit_1
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.taubenfuetterung_automation
         state: "on"
       - condition: state
         entity_id: sensor.taubenfutterspender_esp_device_uptime
         state: "unavailable"
-    action:
+    actions:
       - action: notify.thomas_plus
         data:
           title: Taubenfutterspender

@@ -10,7 +10,8 @@ automation:
         state: button_pressed_short
     actions:
       - action: light.toggle
-        entity_id: light.kinderzimmer_irene_licht
+        target:
+          entity_id: light.kinderzimmer_irene_licht
 
   - alias: Kinderzimmer-Irene Deckenlicht mit Taster am Bett
     triggers:
@@ -21,7 +22,10 @@ automation:
           - "unavailable"
     conditions:
       - condition: template
-        value_template: "{{ trigger.to_state.attributes.event_type == '1_initial_press' or trigger.to_state.attributes.event_type == '2_initial_press' }}"
-    action:
+        value_template: >-
+          {{ trigger.to_state.attributes.event_type == '1_initial_press'
+             or trigger.to_state.attributes.event_type == '2_initial_press' }}
+    actions:
       - action: light.toggle
-        entity_id: light.kinderzimmer_irene_licht
+        target:
+          entity_id: light.kinderzimmer_irene_licht

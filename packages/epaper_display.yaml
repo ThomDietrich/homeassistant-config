@@ -1,15 +1,28 @@
-sensor:
-  - platform: rest
-    resource: https://bau.blindfuchs.de/api/states/person.stephan
-    name: BauBlindfuchs (REST) Person Stephan
-    value_template: "{{ value_json.state if value_json else 'unavailable' }}"
+# ePaper Display — Datenquellen
+#
+# Stellt die Template-Sensoren bereit, die der ePaper-Controller (ESPHome)
+# über die HA-API liest:
+#   - Anwesenheitskürzel je Person (3 Buchstaben, z.B. "Zuh.", "Unt.", "Auto")
+#   - Solarprognose (heute / morgen je nach Tagesphase)
+#   - Datumsstempel (lokalisiert, kurz)
+#   - Nächster Termin / Geburtstag / Feiertag (mit (+N)-Tagesvorschau)
+
+rest:
+  - resource: https://bau.blindfuchs.de/api/states/person.stephan
     headers:
       Authorization: !secret access_token_bau_blindfuchs
+    sensor:
+      - name: BauBlindfuchs (REST) Person Stephan
+        unique_id: rest_baublindfuchs_person_stephan
+        value_template: "{{ value_json.state if value_json else 'unavailable' }}"
+
+################################################################################
 
 template:
+  # --- State-getriggert (poll on dependent state changes) --------------------
   - sensor:
-      # Update with states
       - name: ePaper Display Position Werner
+        icon: mdi:tooltip-account
         state: >
           {%- set pos = states('device_tracker.wd_pixel_6a') -%}
           {% if pos == 'unknown' %}
@@ -21,9 +34,9 @@ template:
           {% else %}
             {{ pos }}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Display Position Irene
+        icon: mdi:tooltip-account
         state: >
           {%- set pos = states('device_tracker.irene_smartphone_redmi') -%}
           {% if pos == 'unknown' %}
@@ -33,11 +46,11 @@ template:
           {% else %}
             Unt.
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Display Position Thomas
+        icon: mdi:tooltip-account
         state: >
-          {%- set pos = states('device_tracker.ths23u') -%}
+          {%- set pos  = states('device_tracker.ths23u') -%}
           {%- set wifi = states('sensor.ths23u_wifi_connection') -%}
           {% if wifi == 'My CUPRA 5951' %}
             Auto
@@ -50,9 +63,9 @@ template:
           {% else %}
             {{ pos }}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Display Position Stephan
+        icon: mdi:tooltip-account
         state: >
           {%- set pos = states('sensor.baublindfuchs_rest_person_stephan') -%}
           {% if pos == 'unknown' %}
@@ -68,7 +81,6 @@ template:
           {% else %}
             {{ pos }}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Forecast Solar Production
         unique_id: unique_id__epaper_forecast_solar_production
@@ -80,9 +92,11 @@ template:
             {{ states('sensor.solcast_awf1877s_prognose_morgen') | round(0) }}
           {% endif %}
         availability: >
-          {{ has_value('sensor.solcast_awf1877s_prognose_heute') and has_value('sensor.solcast_awf1877s_prognose_morgen') }}
+          {{ has_value('sensor.solcast_awf1877s_prognose_heute')
+             and has_value('sensor.solcast_awf1877s_prognose_morgen') }}
 
-  - trigger:
+  # --- Trigger-basiert (HA-Start, jede volle Stunde, Kalender-Updates) -------
+  - triggers:
       - trigger: homeassistant
         event: start
       - trigger: time_pattern
@@ -94,28 +108,26 @@ template:
           - calendar.feiertage_in_deutschland
           - calendar.nurzen100_stephan_dietrich_stephan_nurzen_de
     sensor:
-      # Update with states and every full hour
       - name: ePaper Display Datumsstempel
+        icon: mdi:calendar
         state: >
           {% set weekdays_short = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] %}
           {% set months_short = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"] %}
           {{ weekdays_short[now().weekday()] + " " + now().strftime("%-d") + ". " + months_short[now().month - 1] }}
-        icon: mdi:calendar
 
       - name: ePaper Kalender Termin
+        icon: mdi:tooltip-account
         state: >
-          {%- set cal_name = 'calendar.wd1310_gmail_com' %}
+          {%- set cal_name = 'calendar.wd1310_gmail_com' -%}
           {% if state_attr(cal_name, 'start_time') is none %}
             {{ '' }}
           {% else %}
-            {%- set all_day = state_attr(cal_name, 'all_day') == True -%}
+            {%- set all_day = state_attr(cal_name, 'all_day') -%}
             {%- set start_time = as_timestamp(state_attr(cal_name, 'start_time')) | timestamp_custom("%H:%M") -%}
-
             {%- set title = state_attr(cal_name, 'message') -%}
             {% if not all_day %}
               {%- set title = start_time + ' ' + title -%}
             {% endif %}
-
             {%- set hours = (as_timestamp(state_attr(cal_name, 'start_time')) - as_timestamp(today_at("00:00"))) / 3600 -%}
             {%- set days = (hours / 24) -%}
             {% if days < 1 %}
@@ -126,11 +138,11 @@ template:
               {{ '' }}
             {% endif %}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Kalender Geburtstag
+        icon: mdi:tooltip-account
         state: >
-          {%- set cal_name = 'calendar.geburtstage' %}
+          {%- set cal_name = 'calendar.geburtstage' -%}
           {% if state_attr(cal_name, 'start_time') is none %}
             {{ '' }}
           {% else %}
@@ -145,11 +157,11 @@ template:
               {{ '' }}
             {% endif %}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Kalender Feiertag
+        icon: mdi:tooltip-account
         state: >
-          {%- set cal_name = 'calendar.feiertage_in_deutschland' %}
+          {%- set cal_name = 'calendar.feiertage_in_deutschland' -%}
           {% if state_attr(cal_name, 'start_time') is none %}
             {{ '' }}
           {% else %}
@@ -164,22 +176,20 @@ template:
               {{ '' }}
             {% endif %}
           {% endif %}
-        icon: mdi:tooltip-account
 
       - name: ePaper Kalender Nurzen100
+        icon: mdi:tooltip-account
         state: >
-          {%- set cal_name = 'calendar.nurzen100_stephan_dietrich_stephan_nurzen_de' %}
+          {%- set cal_name = 'calendar.nurzen100_stephan_dietrich_stephan_nurzen_de' -%}
           {% if state_attr(cal_name, 'start_time') is none %}
             {{ '' }}
           {% else %}
-            {%- set all_day = state_attr(cal_name, 'all_day') == True -%}
+            {%- set all_day = state_attr(cal_name, 'all_day') -%}
             {%- set start_time = as_timestamp(state_attr(cal_name, 'start_time')) | timestamp_custom("%H:%M") -%}
-
             {%- set title = state_attr(cal_name, 'message') -%}
             {% if not all_day %}
               {%- set title = start_time + ' ' + title -%}
             {% endif %}
-
             {%- set hours = (as_timestamp(state_attr(cal_name, 'start_time')) - as_timestamp(today_at("00:00"))) / 3600 -%}
             {%- set days = (hours / 24) -%}
             {% if days < 1 %}
@@ -190,4 +200,3 @@ template:
               {{ '' }}
             {% endif %}
           {% endif %}
-        icon: mdi:tooltip-account

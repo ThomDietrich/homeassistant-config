@@ -1,11 +1,11 @@
 template:
-  - trigger:
+  - triggers:
       - trigger: time_pattern
         hours: /1
         minutes: 1 # 1 minute past the hour, every hour
       - trigger: homeassistant
         event: start
-    action:
+    actions:
       - action: weather.get_forecasts
         target:
           entity_id: weather.dwd_alperstedt
@@ -17,7 +17,7 @@ template:
     sensor:
       - name: dwd_forecast_tagesstempel
         state: >-
-          {{'Heute' if now().hour < 16 else 'Morgen' }}
+          {{ 'Heute' if now().hour < 16 else 'Morgen' }}
 
       - name: dwd_forecast_condition
         state: >-

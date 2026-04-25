@@ -1,3 +1,12 @@
+# Systemweite Alarm-, Warn- und Infomeldungen
+#
+# Dreistufiges Meldesystem:
+#   Info     -> Persistent + Mobile
+#   Warnung  -> Persistent + Mobile + Flur-Buzzer (alle 30 min)
+#   Alarm    -> Persistent + Mobile + Flur-Buzzer (alle 10 s)
+#
+# Quittiert wird durch Ausschalten des jeweiligen input_boolean.
+
 input_boolean:
   system_meldung_warn:
     name: Systemweite Warnmeldung (Flur Buzzer)
@@ -15,14 +24,15 @@ script:
     description: Sende eine Alarmmeldung (Persistent, Flur, Mobile)
     fields:
       msg_title:
-        description: "Der Titel der schriftlichen Benachrichtigung"
-        example: "AWF1877 Heizungsregelung Warnung"
+        description: Der Titel der schriftlichen Benachrichtigung
+        example: AWF1877 Heizungsregelung Alarm
       msg_text:
-        description: "The message content"
-        example: "Problem mit Heizung. Bitte prüfen."
+        description: Der Inhalt der Benachrichtigung
+        example: Problem mit Heizung. Bitte prüfen.
     sequence:
       - action: input_boolean.turn_on
-        entity_id: input_boolean.system_meldung_alarm
+        target:
+          entity_id: input_boolean.system_meldung_alarm
       - action: notify.werner_thomas_plus
         data:
           title: "{{ msg_title }}"
@@ -39,14 +49,15 @@ script:
     description: Sende eine Warnmeldung (Persistent, Flur, Mobile)
     fields:
       msg_title:
-        description: "Der Titel der schriftlichen Benachrichtigung"
-        example: "AWF1877 Heizungsregelung Info"
+        description: Der Titel der schriftlichen Benachrichtigung
+        example: AWF1877 Heizungsregelung Warnung
       msg_text:
-        description: "The message content"
-        example: "Problem mit Heizung. Bitte prüfen."
+        description: Der Inhalt der Benachrichtigung
+        example: Problem mit Heizung. Bitte prüfen.
     sequence:
       - action: input_boolean.turn_on
-        entity_id: input_boolean.system_meldung_warn
+        target:
+          entity_id: input_boolean.system_meldung_warn
       - action: notify.werner_thomas_plus
         data:
           title: "{{ msg_title }}"
@@ -55,14 +66,14 @@ script:
             channel: Warnmeldung
 
   notify_info:
-    description: Sende eine Infomeldung (Persistent, Flur, Mobile)
+    description: Sende eine Infomeldung (Persistent, Mobile)
     fields:
       msg_title:
-        description: "Der Titel der schriftlichen Benachrichtigung"
-        example: "AWF1877 Heizungsregelung Info"
+        description: Der Titel der schriftlichen Benachrichtigung
+        example: AWF1877 Heizungsregelung Info
       msg_text:
-        description: "The message content"
-        example: "Problem mit Heizung. Bitte prüfen."
+        description: Der Inhalt der Benachrichtigung
+        example: Problem mit Heizung. Bitte prüfen.
     sequence:
       - action: notify.werner_thomas_plus
         data:
@@ -76,7 +87,7 @@ script:
 automation:
   - alias: Warnmeldung via Flur Buzzer
     mode: restart
-    trigger:
+    triggers:
       - alias: Flag frisch gesetzt
         trigger: state
         entity_id: input_boolean.system_meldung_warn
@@ -88,18 +99,18 @@ automation:
         trigger: state
         entity_id: binary_sensor.flur_og_bewegungsmelder_uv_occupancy
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.system_meldung_warn
         state: "on"
-    action:
+    actions:
       - action: esphome.haus_uv_astra_play_rtttl
         data:
-          song_str: siren:d=8,o=5,b=100:d,e,c
+          song_str: "siren:d=8,o=5,b=100:d,e,c"
 
   - alias: Alarmmeldung via Flur Buzzer
     mode: restart
-    trigger:
+    triggers:
       - alias: Flag frisch gesetzt
         trigger: state
         entity_id: input_boolean.system_meldung_alarm
@@ -107,11 +118,11 @@ automation:
       - alias: Regelmäßige Erinnerung
         trigger: time_pattern
         seconds: "/10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.system_meldung_alarm
         state: "on"
-    action:
+    actions:
       - action: esphome.haus_uv_astra_play_rtttl
         data:
-          song_str: siren:d=8,o=5,b=100:d,e,d,e,c,f,d,e
+          song_str: "siren:d=8,o=5,b=100:d,e,d,e,c,f,d,e"

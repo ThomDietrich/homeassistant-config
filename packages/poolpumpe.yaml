@@ -1,11 +1,12 @@
 automation:
   - alias: IKEA Minitaster 1 schaltet Poolpumpe
-    trigger:
+    triggers:
       - trigger: event
         event_type: zha_event
         event_data:
           device_ieee: "04:cd:15:ff:fe:2d:3b:0e"
           command: "on"
-    action:
+    actions:
       - action: switch.toggle
-        entity_id: switch.hof_poolpumpe
+        target:
+          entity_id: switch.hof_poolpumpe

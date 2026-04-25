@@ -1,7 +1,16 @@
+# evcc — abgeleitete Sensoren
+#
+# Werte, die nicht direkt von evcc kommen, sondern aus den MQTT-Sensoren
+# berechnet werden.
+
 template:
   - sensor:
+      # Startzeitpunkt der aktuellen Ladung (auf 5 Minuten gerundet).
+      # Liefert 0, wenn aktuell nicht geladen wird.
       - name: evcc_charge_duration_since
         unique_id: uniqueid__evcc_charge_duration_since
+        icon: mdi:calendar-clock
+        device_class: timestamp
         state: >
           {% if is_state("binary_sensor.evcc_loadpoint_charging", "off") %}
             0
@@ -9,16 +18,18 @@ template:
             {{ ((as_timestamp(now() - timedelta(seconds=(states.sensor.evcc_charge_duration_s.state | int))) / 300) | round() * 300) | timestamp_local() }}
           {% endif %}
         availability: >
-          {{ false if is_state("sensor.evcc_charge_duration_s", "unavailable") else true }}
-        icon: mdi:calendar-clock
-        device_class: timestamp
+          {{ has_value("sensor.evcc_charge_duration_s") }}
 
+      # Hausverbrauch ohne Wallbox-Anteil (für realistischere Lastdarstellung).
       - name: irene_home_power_excluding_wallbox
         unique_id: uniqueid__irene_home_power_excluding_wallbox
-        state: >
-          {{ states("sensor.kostal_plenticore_scb_home_power") | float - states("sensor.evcc_charge_power_w") | float }}
-        availability: >
-          {{ false if is_state("sensor.kostal_plenticore_scb_home_power", "unavailable") or is_state("sensor.evcc_charge_power_w", "unavailable") else true }}
-        icon: mdi:calendar-clock
+        icon: mdi:home-lightning-bolt-outline
         device_class: power
-        unit_of_measurement: W
+        unit_of_measurement: "W"
+        state_class: measurement
+        state: >
+          {{ states("sensor.kostal_plenticore_scb_home_power") | float
+             - states("sensor.evcc_charge_power_w") | float }}
+        availability: >
+          {{ has_value("sensor.kostal_plenticore_scb_home_power")
+             and has_value("sensor.evcc_charge_power_w") }}

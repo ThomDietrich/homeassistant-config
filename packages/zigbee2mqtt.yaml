@@ -1,56 +1,55 @@
 mqtt:
   sensor:
     - name: Zigbee2mqtt Networkmap
-      # if you change base_topic of Zigbee2mqtt, change state_topic accordingly
+      # Wenn base_topic in Zigbee2mqtt geändert wird, hier ebenfalls anpassen.
       state_topic: zigbee2mqtt/bridge/response/networkmap
       value_template: >-
         {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
-      # again, if you change base_topic of Zigbee2mqtt, change json_attributes_topic accordingly
       json_attributes_topic: zigbee2mqtt/bridge/response/networkmap
       json_attributes_template: "{{ value_json.data.value | tojson }}"
 
-# Input number for joining time remaining (in minutes)
+# Verbleibende Join-Zeit (Minuten)
 input_number:
   zigbee2mqtt_join_minutes:
-    name: "Zigbee2MQTT join minutes"
+    name: Zigbee2MQTT join minutes
     initial: 2
     min: 1
     max: 5
     step: 1
     mode: slider
 
-# Input text to input Zigbee2MQTT friendly_name for scripts
+# Eingabe von friendly_name für Rename-Skript
 input_text:
   zigbee2mqtt_new_name:
     name: Zigbee2MQTT New Name
     initial: ""
-    icon: "mdi:moon-new"
+    icon: mdi:moon-new
 
-# Input select for choosing Zigbee2MQTT devices
+# Auswahl bestehender Zigbee2MQTT-Geräte
 input_select:
   zigbee2mqtt_old_name_select:
     name: Zigbee2MQTT Old Name
-    icon: "mdi:moon-full"
+    icon: mdi:moon-full
     options:
       - Initial Option
   zigbee2mqtt_remove_select:
     name: Zigbee2MQTT Remove
-    icon: "mdi:trash-can"
+    icon: mdi:trash-can
     options:
       - Initial Option
 
-# Input boolean to set the force remove flag for devices
+# Force-Remove-Flag
 input_boolean:
   zigbee2mqtt_force_remove:
     name: Zigbee2MQTT Force Remove
     initial: false
     icon: mdi:alert-remove
 
-# Scripts for renaming & removing devices
+# Rename- und Remove-Skripte
 script:
   zigbee2mqtt_rename:
     alias: Zigbee2MQTT Rename
-    icon: "mdi:pencil"
+    icon: mdi:pencil
     sequence:
       - action: mqtt.publish
         data:
@@ -60,9 +59,10 @@ script:
               "from": "{{ states('input_select.zigbee2mqtt_old_name_select') }}",
               "to": "{{ states('input_text.zigbee2mqtt_new_name') }}"
             }
+
   zigbee2mqtt_remove:
     alias: Zigbee2MQTT Remove
-    icon: "mdi:trash-can"
+    icon: mdi:trash-can
     sequence:
       - action: mqtt.publish
         data:
@@ -76,40 +76,39 @@ script:
 automation:
   - id: "zigbee2mqtt_create_notification_on_successful_interview"
     alias: Zigbee Device Joined Notification
-    trigger:
-      platform: mqtt
-      topic: "zigbee2mqtt/bridge/event"
-    condition:
-      condition: template
-      value_template: '{{trigger.payload_json.type == "device_interview" and trigger.payload_json.data.status == "successful" and trigger.payload_json.data.supported}}'
-    action:
-      - service: persistent_notification.create
-        data_template:
+    triggers:
+      - trigger: mqtt
+        topic: zigbee2mqtt/bridge/event
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.payload_json.type == "device_interview"
+             and trigger.payload_json.data.status == "successful"
+             and trigger.payload_json.data.supported }}
+    actions:
+      - action: persistent_notification.create
+        data:
           title: Device joined the Zigbee2MQTT network
-          message: "Name: {{trigger.payload_json.data.friendly_name}},
-            Vendor: {{trigger.payload_json.data.definition.vendor}},
-            Model: {{trigger.payload_json.data.definition.model}},
-            Description: {{trigger.payload_json.data.definition.description}}"
+          message: >-
+            Name: {{ trigger.payload_json.data.friendly_name }},
+            Vendor: {{ trigger.payload_json.data.definition.vendor }},
+            Model: {{ trigger.payload_json.data.definition.model }},
+            Description: {{ trigger.payload_json.data.definition.description }}
 
   - id: "zigbee2mqtt_update_devices_list"
     alias: Update Zigbee Devices List
-    description: ""
+    mode: single
     triggers:
-      - platform: mqtt
+      - trigger: mqtt
         topic: zigbee2mqtt/bridge/event
-      - platform: mqtt
+      - trigger: mqtt
         topic: zigbee2mqtt/bridge/response/device/rename
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
-    conditions: []
     actions:
       - delay:
-          hours: 0
-          minutes: 0
           seconds: 1
-          milliseconds: 0
-      - service: input_select.set_options
-        metadata: {}
+      - action: input_select.set_options
         target:
           entity_id:
             - input_select.zigbee2mqtt_old_name_select
@@ -117,7 +116,7 @@ automation:
         data:
           options: |
             {%- set find_integration = 'mqtt' %}
-            {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
+            {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq', None) | list %}
             {%- set ns = namespace(entities = [""]) %}
             {%- for device in devices if device_attr(device, 'identifiers') %}
               {%- set ids = device_attr(device, 'identifiers') | list | first %}
@@ -126,7 +125,7 @@ automation:
                 {%- set ns.entities = ns.entities + names %}
               {%- endif %}
             {%- endfor %}
-            {{ ns.entities | unique | sort | list}}
+            {{ ns.entities | unique | sort | list }}
       - action: input_select.select_option
         target:
           entity_id: input_select.zigbee2mqtt_old_name_select
@@ -138,9 +137,7 @@ automation:
         data:
           option: ""
       - action: input_text.set_value
-        metadata: {}
-        data:
-          value: ""
         target:
           entity_id: input_text.zigbee2mqtt_new_name
-    mode: single
+        data:
+          value: ""

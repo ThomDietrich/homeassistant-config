@@ -4,7 +4,6 @@ input_select:
     icon: mdi:washing-machine
     options:
       - "Off"
-      #- "Standby"
       - "Active"
       - "Finished"
     initial: "Off"
@@ -12,67 +11,70 @@ input_select:
 automation:
   - id: "1609362853002"
     alias: Waschmaschine StateMachine zu Active
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.keller_waschmaschine_shp5_energy_power
         above: 30
         for:
           seconds: 30
-    condition:
-      condition: not
-      conditions:
-        - condition: state
-          entity_id: input_select.waschmaschine_opstate
-          state: "Active"
-    action:
+    conditions:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_select.waschmaschine_opstate
+            state: "Active"
+    actions:
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.waschmaschine_opstate
+        data:
           option: "Active"
 
   - id: "1609362853005"
     alias: Waschmaschine StateMachine Übergang zu Finished
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.keller_waschmaschine_shp5_energy_power
         below: 2
         for:
           minutes: 5
-    condition:
+    conditions:
       - condition: state
         entity_id: input_select.waschmaschine_opstate
         state:
           - "Active"
-    action:
+    actions:
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.waschmaschine_opstate
+        data:
           option: "Finished"
 
   - id: "1609362853003"
     alias: Waschmaschine StateMachine zu Off nach einer Stunde in Finished
-    trigger:
+    triggers:
       - trigger: state
         entity_id: input_select.waschmaschine_opstate
         to: "Finished"
         for:
           hours: 1
           minutes: 30
-    action:
+    actions:
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.waschmaschine_opstate
+        data:
           option: "Off"
 
   ##############################################################################
 
   - id: "1609362853004"
     alias: Waschmaschine fertig Benachrichtigung
-    trigger:
+    triggers:
       - trigger: state
         entity_id: input_select.waschmaschine_opstate
         to: "Finished"
-    action:
+    actions:
       - action: notify.persistent_notification
         data:
           message: Waschmaschine fertig!

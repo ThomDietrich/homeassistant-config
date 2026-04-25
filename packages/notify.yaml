@@ -1,4 +1,14 @@
+# Notification groups
+#
+# Groups multiple notify actions into a single notify action so a single call
+# fans out to several devices. Per HA docs, the `action` value is the name
+# part of the notify action only — i.e. `mobile_app_pixel_6a`, not
+# `notify.mobile_app_pixel_6a`.
+#
+# Docs: https://www.home-assistant.io/integrations/group/#notify-groups
+
 notify:
+  # --- Werner ----------------------------------------------------------------
   - platform: group
     name: werner
     services:
@@ -10,8 +20,7 @@ notify:
       - action: mobile_app_pixel_6a
       - action: persistent_notification
 
-  ##############################################################################
-
+  # --- Thomas ----------------------------------------------------------------
   - platform: group
     name: thomas
     services:
@@ -23,16 +32,7 @@ notify:
       - action: mobile_app_ths23u
       - action: persistent_notification
 
-  ##############################################################################
-
-  - platform: group
-    name: werner_thomas_plus
-    services:
-      - action: mobile_app_ths23u
-      - action: persistent_notification
-
-  ##############################################################################
-
+  # --- Irene -----------------------------------------------------------------
   - platform: group
     name: irene
     services:
@@ -42,4 +42,12 @@ notify:
     name: irene_plus
     services:
       - action: mobile_app_irene_redmi
+      - action: persistent_notification
+
+  # --- Combined --------------------------------------------------------------
+  - platform: group
+    name: werner_thomas_plus
+    services:
+      - action: mobile_app_pixel_6a
+      - action: mobile_app_ths23u
       - action: persistent_notification

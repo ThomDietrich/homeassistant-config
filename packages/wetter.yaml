@@ -1,45 +1,29 @@
-# template:
-#   - trigger:
-#       - trigger: time_pattern
-#         hours: /1
-#     action:
-#       - action: weather.get_forecast
-#         target:
-#           entity_id: weather.dwd_alperstedt
-#         data:
-#           type: hourly
-#         response_variable: hourly
-#     sensor:
-#       - name: DWD Alperstedt Forecast
-#         unique_id: unique_id__dwd_alperstedt_forecast
-#         state: "{{ states('weather.dwd_alperstedt') }}"
-#         attributes:
-#           forecast: "{{ hourly.forecast }}"
+rest:
+  - resource: !secret ipgeolocation_moon_api_url
+    scan_interval: 1200
+    sensor:
+      - name: IPGeolocation Moon Astronomy API
+        unique_id: rest_ipgeolocation_moon_astronomy
+        value_template: "{{ value_json.moon_status }}"
+        json_attributes:
+          - date
+          - current_time
+          - moonrise
+          - moonset
+          - moon_status
+          - moon_altitude
+          - moon_distance
+          - moon_azimuth
+          - moon_parallactic_angle
 
 sensor:
-  ##############################################################################
-
+  # OpenWeatherMap (custom integration; platform form is required here)
   - platform: openweathermap_all
     api_key: !secret openweathermap_api_key
     latitude: !secret latitude
     longitude: !secret longitude
 
-  - platform: rest
-    resource: !secret ipgeolocation_moon_api_url
-    name: IPGeolocation Moon Astronomy API
-    scan_interval: 1200
-    json_attributes:
-      - date
-      - current_time
-      - moonrise
-      - moonset
-      - moon_status
-      - moon_altitude
-      - moon_distance
-      - moon_azimuth
-      - moon_parallactic_angle
-    value_template: "{{value_json.moon_status}}"
-
+  # Statistics sensors over outdoor temperature
   - platform: statistics
     name: weather_station_outtemp_c_18h_min
     entity_id: sensor.weather_station_outtemp_c

@@ -1,7 +1,13 @@
-sensor:
-  - platform: rest
-    name: Go-eCharger Firmware Version
-    unique_id: uniqueid__go_echarger_firmware_version
-    resource: http://192.168.23.90/api/status?filter=fwv
-    value_template: "{{ value_json.fwv }}"
+# go-eCharger — direkter API-Abruf
+#
+# evcc selbst kommuniziert über sein eigenes Modbus/HTTP-Backend; dieser
+# Sensor liest nur die Firmware-Version direkt vom Charger, da evcc sie
+# nicht über MQTT exposed.
+
+rest:
+  - resource: http://192.168.23.90/api/status?filter=fwv
     timeout: 3
+    sensor:
+      - name: Go-eCharger Firmware Version
+        unique_id: uniqueid__go_echarger_firmware_version
+        value_template: "{{ value_json.fwv }}"

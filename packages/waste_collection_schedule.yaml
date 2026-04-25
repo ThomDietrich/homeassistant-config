@@ -10,9 +10,9 @@ waste_collection_schedule:
       calendar_title: Abfallwirtschaft Landkreis Sömmerda
       customize:
         - type: "Biotonne"
-          show: False
+          show: false
         - type: "Container für Baum- und Strauchschnitt"
-          show: False
+          show: false
   fetch_time: "03:00"
   random_fetch_time_offset: 120
   day_switch_time: "11:00"

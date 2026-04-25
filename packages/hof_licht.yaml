@@ -4,196 +4,206 @@ light:
     entity_id: switch.vorbau_dreifachtaster_vorbau_hoflicht
 
 automation:
-  #
+  ##############################################################################
   # Vorbau Dreifachtaster
-  # Taster links: Schaltet Pferdestall und Scheune
-  # Taster mitte: Schaltet Irenes Licht ein und wartet die internen 6min ab
-  # Taster rechts: Schaltet Relay direkt, keine weitere Automation erforderlich
-  #
+  #   Taster links:  Schaltet Pferdestall und Scheune
+  #   Taster mitte:  Schaltet Irenes Licht ein und wartet die internen 6min ab
+  #   Taster rechts: Schaltet Relay direkt, keine weitere Automation erforderlich
   - alias: Vorbau Dreifachtaster Linker Taster
-    trigger:
+    triggers:
       - trigger: state
         entity_id: switch.vorbau_dreifachtaster_button_garage
         to:
           - "on"
           - "off"
-    action:
+    actions:
       - action: "light.turn_{{ trigger.to_state.state }}"
-        entity_id:
-          - light.scheune_hoflicht
-          - light.pferdestall_hoflicht
+        target:
+          entity_id:
+            - light.scheune_hoflicht
+            - light.pferdestall_hoflicht
 
   - alias: Vorbau Dreifachtaster Linke LED folgt Status
     description: Der Lichtschalter hat LEDs und die linke soll immer den korrekten Zustand vom Pferdestall Licht zeigen
-    trigger:
+    triggers:
       - trigger: state
         entity_id: light.pferdestall_hoflicht
         to:
           - "on"
           - "off"
-    action:
+    actions:
       - action: "switch.turn_{{ trigger.to_state.state }}"
-        entity_id: switch.vorbau_dreifachtaster_button_garage
+        target:
+          entity_id: switch.vorbau_dreifachtaster_button_garage
 
   - alias: Vorbau Dreifachtaster Mittlerer Taster ein
-    trigger:
+    triggers:
       - trigger: state
         entity_id: switch.vorbau_dreifachtaster_button_irene
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: binary_sensor.hoflicht_irene_milchhaus_status
         state: "off"
-    action:
+    actions:
       - action: button.press
-        entity_id: button.hoflicht_irene_milchhaus_ausloser
+        target:
+          entity_id: button.hoflicht_irene_milchhaus_ausloser
 
   - alias: Vorbau Dreifachtaster Mittlerer Taster kann nicht ausgeschaltet werden
-    trigger:
+    triggers:
       - trigger: state
         entity_id: switch.vorbau_dreifachtaster_button_irene
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: binary_sensor.hoflicht_irene_milchhaus_status
         state: "on"
-    action:
+    actions:
       - action: switch.turn_on
-        entity_id: switch.vorbau_dreifachtaster_button_irene
+        target:
+          entity_id: switch.vorbau_dreifachtaster_button_irene
 
   - alias: Vorbau Dreifachtaster Mittlere LED folgt Status
-    trigger:
+    triggers:
       - trigger: state
         entity_id: binary_sensor.hoflicht_irene_milchhaus_status
         to:
           - "on"
           - "off"
-    action:
+    actions:
       - action: "switch.turn_{{ trigger.to_state.state }}"
-        entity_id: switch.vorbau_dreifachtaster_button_irene
+        target:
+          entity_id: switch.vorbau_dreifachtaster_button_irene
 
-  #
+  ##############################################################################
   # Vorbau Hoflicht folgt Irene Licht
-  #
   - alias: Vorbaulicht folgt Hoflicht Irene - ON
     description: Schalte Vorbaulicht mit Irenes Licht ein, WENN noch nicht aktiv
-    trigger:
+    triggers:
       - trigger: state
         entity_id: binary_sensor.hoflicht_irene_milchhaus_status
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: light.vorbau_hoflicht
         state: "off"
-    action:
+    actions:
       - action: light.turn_on
-        entity_id: light.vorbau_hoflicht
+        target:
+          entity_id: light.vorbau_hoflicht
       - action: input_boolean.turn_on
-        entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
+        target:
+          entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
 
   - alias: Vorbaulicht folgt Hoflicht Irene - OFF
-    description: Schalte Vorbaulicht mit Irenes Licht ein, WENN dadurch eingeschaltet
-    trigger:
+    description: Schalte Vorbaulicht mit Irenes Licht aus, WENN dadurch eingeschaltet
+    triggers:
       - trigger: state
         entity_id: binary_sensor.hoflicht_irene_milchhaus_status
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
         state: "on"
-    action:
+    actions:
       - action: light.turn_off
-        entity_id: light.vorbau_hoflicht
+        target:
+          entity_id: light.vorbau_hoflicht
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
+        target:
+          entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
 
   - alias: Vorbaulicht folgt Hoflicht Irene - Unterbreche Folgen
     description: Deaktiviere Folgen-Flag wenn Vorbau Licht geschaltet wird
-    trigger:
+    triggers:
       - trigger: state
         entity_id: light.vorbau_hoflicht
       - trigger: state
         entity_id: light.pferdestall_hoflicht
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
         state: "on"
         for:
           seconds: 3
-    action:
+    actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
+        target:
+          entity_id: input_boolean.flag_vorbau_hoflicht_folgt_irene_hoflicht
 
-  #
+  ##############################################################################
   # Ikea Shortcut Taster in Küche oben
-  #
   - alias: Reaktion auf IKEA Minitaster Küche ein (pt1)
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 537c1f38a46cecfee54500d2db1e5537
         type: action
         subtype: "on"
-    condition:
+    conditions:
       - alias: Licht ist aktuell aus
         condition: state
         entity_id: light.vorbau_hoflicht
         state: "off"
-    action:
+    actions:
       - action: light.turn_on
-        entity_id: light.vorbau_hoflicht
+        target:
+          entity_id: light.vorbau_hoflicht
 
   - alias: Reaktion auf IKEA Minitaster Küche ein (pt2)
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 537c1f38a46cecfee54500d2db1e5537
         type: action
         subtype: "on"
-    condition:
+    conditions:
       - alias: Licht ist bereits an
         condition: state
         entity_id: light.vorbau_hoflicht
         state: "on"
-    action:
+    actions:
       - action: light.turn_on
-        entity_id: light.pferdestall_hoflicht
-      - action: light.turn_on
-        entity_id: light.scheune_hoflicht
+        target:
+          entity_id:
+            - light.pferdestall_hoflicht
+            - light.scheune_hoflicht
 
   - alias: Reaktion auf IKEA Minitaster Küche ein (pt3)
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 537c1f38a46cecfee54500d2db1e5537
         type: action
         subtype: "on"
-    condition:
+    conditions:
       - alias: Licht (pt2) ist bereits an
         condition: state
         entity_id: light.pferdestall_hoflicht
         state: "on"
-    action:
+    actions:
       - action: button.press
-        entity_id: button.irene_hoflicht_ausloser
+        target:
+          entity_id: button.irene_hoflicht_ausloser
 
   - alias: Reaktion auf IKEA Minitaster Küche ein lange
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 537c1f38a46cecfee54500d2db1e5537
         type: action
         subtype: brightness_move_up
-    action:
+    actions:
       - action: light.turn_on
-        entity_id: light.vorbau_hoflicht
-      - action: light.turn_on
-        entity_id: light.pferdestall_hoflicht
-      - action: light.turn_on
-        entity_id: light.scheune_hoflicht
+        target:
+          entity_id:
+            - light.vorbau_hoflicht
+            - light.pferdestall_hoflicht
+            - light.scheune_hoflicht
 
   - alias: Reaktion auf IKEA Minitaster Küche aus
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 537c1f38a46cecfee54500d2db1e5537
@@ -204,51 +214,50 @@ automation:
         device_id: 537c1f38a46cecfee54500d2db1e5537
         type: action
         subtype: brightness_move_down
-    action:
+    actions:
       - action: light.turn_off
-        entity_id: light.scheune_hoflicht
-      - action: light.turn_off
-        entity_id: light.pferdestall_hoflicht
-      - action: light.turn_off
-        entity_id: light.vorbau_hoflicht
+        target:
+          entity_id:
+            - light.scheune_hoflicht
+            - light.pferdestall_hoflicht
+            - light.vorbau_hoflicht
 
-  #
+  ##############################################################################
   # Ikea Shortcut Taster am Hoftor
-  #
   - alias: Reaktion auf IKEA Shortcut Taster Hoftor An
-    trigger:
+    triggers:
       - trigger: event
         event_type: zha_event
         event_data:
           unique_id: "04:cd:15:ff:fe:2d:35:0f:1:0x0006"
-    condition:
+    conditions:
       - alias: Vorbau Licht ist aktuell aus
         condition: state
         entity_id: light.vorbau_hoflicht
         state: "off"
-    action:
+    actions:
       - action: light.turn_on
-        entity_id: light.vorbau_hoflicht
-      - action: light.turn_on
-        entity_id: light.pferdestall_hoflicht
-      - action: light.turn_on
-        entity_id: light.scheune_hoflicht
+        target:
+          entity_id:
+            - light.vorbau_hoflicht
+            - light.pferdestall_hoflicht
+            - light.scheune_hoflicht
 
   - alias: Reaktion auf IKEA Shortcut Taster Hoftor Aus
-    trigger:
+    triggers:
       - trigger: event
         event_type: zha_event
         event_data:
           unique_id: "04:cd:15:ff:fe:2d:35:0f:1:0x0006"
-    condition:
+    conditions:
       - alias: Vorbau Licht ist aktuell an
         condition: state
         entity_id: light.vorbau_hoflicht
         state: "on"
-    action:
+    actions:
       - action: light.turn_off
-        entity_id: light.scheune_hoflicht
-      - action: light.turn_off
-        entity_id: light.pferdestall_hoflicht
-      - action: light.turn_off
-        entity_id: light.vorbau_hoflicht
+        target:
+          entity_id:
+            - light.scheune_hoflicht
+            - light.pferdestall_hoflicht
+            - light.vorbau_hoflicht

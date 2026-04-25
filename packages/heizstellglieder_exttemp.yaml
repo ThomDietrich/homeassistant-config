@@ -63,14 +63,14 @@ automation:
                 {%- set t_ext = states('sensor.og_schlafstube_raumsensor_temperature') | float(0) -%}
                 {%- set current_calibration = states('number.og_schlafstube_heizstellglied_local_temperature_calibration') | float(0) -%}
                 {%- set new_calibration = (current_calibration - (t_trv - t_ext)) | round(1) -%}
-                {{ max([-6, min([6, (new_calibration | round(1))])]) }}
+                {{ max([-6, min([6, new_calibration])]) }}
 
   - alias: Provide Kinderzimmer TRV with external temperature value (absolute measurement)
     triggers:
       - trigger: state
         entity_id: sensor.kinderzimmer_raumsensor_temperature
     actions:
-      # Handle fallback case when temperature sensor unavailable
+      # Fallback wenn externer Sensor nicht verfügbar
       - if:
           - condition: template
             value_template: >-
@@ -80,24 +80,24 @@ automation:
             target:
               entity_id: select.kinderzimmer_heizstellglied_sensor
             data:
-              option: "internal"
-          - stop: "External temperature sensor unavailable"
+              option: internal
+          - stop: External temperature sensor unavailable
 
-      # Ensure TRV is set to follow external temperature sensor
+      # Sicherstellen, dass TRV den externen Sensor benutzt
       - if:
           - condition: template
             value_template: >-
-              {{ not is_state("climate.kinderzimmer_heizstellglied", "external")}}
+              {{ not is_state("climate.kinderzimmer_heizstellglied", "external") }}
         then:
           - action: select.select_option
             target:
               entity_id: select.kinderzimmer_heizstellglied_sensor
             data:
-              option: "external"
+              option: external
           - delay:
               seconds: 10
 
-      # Update TRV's external temperature info
+      # Externe Temperatur an TRV übermitteln
       - action: number.set_value
         target:
           entity_id: number.kinderzimmer_heizstellglied_external_temperature_input

@@ -1,16 +1,17 @@
 automation:
-  # remote_button_single_press
-  # remote_button_double_press
-  # remote_button_long_press - Achtung, circa 2-3s
+  # IKEA Styrbar Remote button events:
+  #   remote_button_single_press
+  #   remote_button_double_press
+  #   remote_button_long_press   (~2-3s)
 
   - alias: Kinderzimmer Licht Taster rechts unten
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 6a19e5bf596a51352f9ccf398710e027
         type: action
         subtype: 4_single
-    action:
+    actions:
       - if:
           - condition: state
             entity_id: light.kinderzimmer_deckenlampe_vorn
@@ -21,30 +22,26 @@ automation:
         then:
           - action: light.turn_on
             target:
-              entity_id: light.kinderzimmer_deckenlampe_vorn
-            data:
-              brightness_pct: 60
-          - action: light.turn_on
-            target:
-              entity_id: light.kinderzimmer_deckenlampe_hinten
+              entity_id:
+                - light.kinderzimmer_deckenlampe_vorn
+                - light.kinderzimmer_deckenlampe_hinten
             data:
               brightness_pct: 60
         else:
           - action: light.turn_off
             target:
-              entity_id: light.kinderzimmer_deckenlampe_vorn
-          - action: light.turn_off
-            target:
-              entity_id: light.kinderzimmer_deckenlampe_hinten
+              entity_id:
+                - light.kinderzimmer_deckenlampe_vorn
+                - light.kinderzimmer_deckenlampe_hinten
 
   - alias: Kinderzimmer Licht Taster rechts oben
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 6a19e5bf596a51352f9ccf398710e027
         type: action
         subtype: 2_single
-    action:
+    actions:
       - if:
           - condition: state
             entity_id: light.kinderzimmer_wandlampe_vorn
@@ -69,39 +66,35 @@ automation:
               brightness_pct: 20
           - action: light.turn_on
             target:
-              entity_id: light.kinderzimmer_eckstehlampe_unten
-          - action: light.turn_on
-            target:
-              entity_id: light.kinderzimmer_eckstehlampe_oben
+              entity_id:
+                - light.kinderzimmer_eckstehlampe_unten
+                - light.kinderzimmer_eckstehlampe_oben
         else:
           - action: light.turn_off
             target:
-              entity_id: light.kinderzimmer_wandlampe_vorn
-          - action: light.turn_off
-            target:
-              entity_id: light.kinderzimmer_wandlampe_hinten
-          - action: light.turn_off
-            target:
-              entity_id: light.kinderzimmer_eckstehlampe_unten
-          - action: light.turn_off
-            target:
-              entity_id: light.kinderzimmer_eckstehlampe_oben
+              entity_id:
+                - light.kinderzimmer_wandlampe_vorn
+                - light.kinderzimmer_wandlampe_hinten
+                - light.kinderzimmer_eckstehlampe_unten
+                - light.kinderzimmer_eckstehlampe_oben
 
   - alias: Kinderzimmer Licht Taster links oben (Flur)
-    trigger:
+    triggers:
       - trigger: device
         domain: mqtt
         device_id: 6a19e5bf596a51352f9ccf398710e027
         type: action
         subtype: 1_single
-    action:
+    actions:
       - if:
           - condition: state
             entity_id: light.haus_uv_astra_flur_oben_deckenlicht
             state: "off"
         then:
           - action: light.turn_on
-            entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+            target:
+              entity_id: light.haus_uv_astra_flur_oben_deckenlicht
         else:
           - action: light.turn_off
-            entity_id: light.haus_uv_astra_flur_oben_deckenlicht
+            target:
+              entity_id: light.haus_uv_astra_flur_oben_deckenlicht

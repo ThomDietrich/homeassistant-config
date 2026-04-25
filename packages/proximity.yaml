@@ -1,10 +1,10 @@
 automation:
   - alias: Proximity Thomas naehert sich aus der Ferne
-    trigger:
+    triggers:
       - trigger: numeric_state
         entity_id: sensor.awf1877_ths23u_ths23u_entfernung
         below: 30000
-    action:
+    actions:
       - action: notify.mobile_app_ths23u
         data:
-          message: "Du näherst dich. Möchtest du die Heizung aktivieren?"
+          message: Du näherst dich. Möchtest du die Heizung aktivieren?
