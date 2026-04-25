@@ -1,0 +1,87 @@
+# Fussbodenheizung — Abgeleitete Kennzahlen
+#
+# Berechnet aus ESP-Sensoren des keller-fbh-regelung Geraets.
+# Alle Quell-Entities stammen vom FBH-ESP (Keller FBH Mischer / Umwaelzpumpe / Waermezaehler).
+#
+# Zieldatei: /Volumes/config/packages/heizungsregelung/fbh_kennzahlen.yaml
+
+template:
+  - sensor:
+      # FF-Modell Abweichung (Momentanwert): Ist-Oeffnung minus FF-Vorhersage.
+      # Quelle fuer den statistics-Sensor unten (mean ueber 1h).
+      - name: Keller FBH Mischer FF Modell Abweichung
+        unique_id: uniqueid__keller_fbh_mischer_ff_modell_abweichung
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:delta
+        state: >
+          {% set ist = states('sensor.keller_fbh_mischer_mischventil_oeffnung') | float(0) %}
+          {% set ff = states('sensor.keller_fbh_mischer_feedforward_stellgroesse') | float(0) %}
+          {{ (ist - ff) | round(1) }}
+        availability: >
+          {{ has_value('sensor.keller_fbh_mischer_mischventil_oeffnung')
+             and has_value('sensor.keller_fbh_mischer_feedforward_stellgroesse') }}
+
+# Regelfehler Statistik (gleitendes 1h-Fenster)
+# Liefert standard_deviation ueber die letzte Stunde.
+# StdDev < 0.5K = sehr gut, 0.5-1K = ok, >1K = Schwingung/Instabilitaet.
+sensor:
+  # Stellantrieb Duty Cycle (gleitendes 1h-Fenster)
+  # Mean eines binary_sensor: 0.0-1.0 → entspricht 0-100% Duty Cycle.
+  # Ziel: <5%. Ueber 10% = unruhige Regelung, erhoehter Stellantrieb-Verschleiss.
+  - platform: statistics
+    name: Keller FBH Mischer Stellantrieb Duty Cycle
+    unique_id: uniqueid__keller_fbh_mischer_stellantrieb_duty_cycle
+    entity_id: binary_sensor.keller_fbh_mischer_mischventil_faehrt
+    state_characteristic: mean
+    max_age:
+      hours: 1
+    sampling_size: 720
+    precision: 2
+
+  # FF-Modell Abweichung Mittelwert (gleitendes 1h-Fenster)
+  # Mean > 5%: FF-Modell unterschaetzt systematisch die noetige Oeffnung.
+  # Mean < -5%: FF-Modell ueberschaetzt. Mean ~0: Modell stimmt im Mittel.
+  - platform: statistics
+    name: Keller FBH Mischer FF Modell Abweichung Statistik
+    unique_id: uniqueid__keller_fbh_mischer_ff_modell_abweichung_statistik
+    entity_id: sensor.keller_fbh_mischer_ff_modell_abweichung
+    state_characteristic: mean
+    max_age:
+      hours: 1
+    sampling_size: 720
+    precision: 1
+
+  # Regelfehler StdDev (gleitendes 1h-Fenster)
+  # Schwankungsbreite der Regelung. <0.5 K = sehr gut, 0.5-1 K = ok, >1 K = Schwingung.
+  - platform: statistics
+    name: Keller FBH Mischer Regelfehler StdDev
+    unique_id: uniqueid__keller_fbh_mischer_regelfehler_statistik
+    entity_id: sensor.keller_fbh_mischer_pid_regelfehler
+    state_characteristic: standard_deviation
+    max_age:
+      hours: 1
+    sampling_size: 720
+    precision: 2
+
+  # Regelfehler Mean (gleitendes 1h-Fenster)
+  # Systematischer Offset. >0 = VL unter Sollwert, <0 = VL ueber Sollwert.
+  # Ziel: |mean| < 0.5 K.
+  - platform: statistics
+    name: Keller FBH Mischer Regelfehler Mean
+    unique_id: uniqueid__keller_fbh_mischer_regelfehler_mean
+    entity_id: sensor.keller_fbh_mischer_pid_regelfehler
+    state_characteristic: mean
+    max_age:
+      hours: 1
+    sampling_size: 720
+    precision: 2
+
+# Taegliche Waermeenergie (Reset um Mitternacht)
+# Basiert auf dem Primaerkreis-Waermezaehler (kWh, total_increasing).
+utility_meter:
+  keller_fbh_waermeenergie_taeglich:
+    name: Keller FBH Waermeenergie Taeglich
+    unique_id: uniqueid__keller_fbh_waermeenergie_taeglich
+    source: sensor.keller_fbh_waermezaehler_primaerkreis_energie
+    cycle: daily
