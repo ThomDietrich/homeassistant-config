@@ -1,27 +1,37 @@
+# Disabled — evcc notification automations
+#
+# Diese Automatisierungen sind aktuell deaktiviert (Datei-Suffix `_disabled`
+# verhindert das Laden via packages-Mechanismus). Bei Reaktivierung in
+# `evcc_notify.yaml` umbenennen.
+#
+# Stand 2026-04: Syntax bereits auf moderne `triggers/conditions/actions`
+# (Plural) umgestellt; vor dem Aktivieren prüfen, ob die referenzierten
+# Sensoren noch existieren (z.B. sensor.kostal_plenticore_scb_battery_soc).
+
 # automation:
 #   - id: "1652427651624"
 #     alias: Irene Hausbatterie voll Benachrichtigung
-#     trigger:
+#     triggers:
 #       - trigger: numeric_state
 #         entity_id: sensor.kostal_plenticore_scb_battery_soc
 #         above: 97
-#     action:
+#     actions:
 #       - action: notify.irene_plus
 #         data:
-#           title: "AWF1877 Meldung"
-#           message: "Hausbatterie ist jetzt voll geladen. Guter Zeitpunkt um die Waschmaschine zu starten :)"
+#           title: AWF1877 Meldung
+#           message: Hausbatterie ist jetzt voll geladen. Guter Zeitpunkt um die Waschmaschine zu starten :)
 #           data:
 #             channel: Info
-
+#
 #   - id: "1652427651630"
 #     alias: Irene EVCC Stop wegen fehlender Sonne
-#     trigger:
+#     triggers:
 #       - trigger: numeric_state
 #         entity_id: sensor.evcc_charge_power_w
 #         below: 10
 #         for:
 #           minutes: 3
-#     condition:
+#     conditions:
 #       - condition: state
 #         entity_id: select.evcc_mode
 #         state: "pv"
@@ -31,10 +41,10 @@
 #       - condition: numeric_state
 #         entity_id: sensor.kostal_plenticore_scb_solar_power
 #         below: 1500
-#     action:
+#     actions:
 #       - action: notify.irene_plus
 #         data:
-#           title: "AWF1877 Meldung"
-#           message: "Autoladung wegen fehlender Sonne im PV Modus gestoppt"
+#           title: AWF1877 Meldung
+#           message: Autoladung wegen fehlender Sonne im PV Modus gestoppt
 #           data:
 #             channel: Info
