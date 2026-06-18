@@ -3,6 +3,13 @@ automation:
     triggers:
       - trigger: state
         entity_id: event.gartenbewaesserung_astra_taster
+        # WICHTIG: nur bei echtem Tastendruck feuern (state wird dann ein Zeitstempel).
+        # Beim Reconnect/Reboot des ESP geht der Event-Entity auf 'unknown' (Attribut event_type
+        # bleibt erhalten) bzw. 'unavailable'. Ohne diesen Filter wuerde die Pumpe bei JEDEM
+        # Geraete-Neustart umgeschaltet (Reboot-Loop -> Pumpe schaltet ungewollt ein/aus).
+        not_to:
+          - unavailable
+          - unknown
     conditions:
       - condition: state
         entity_id: event.gartenbewaesserung_astra_taster
@@ -22,26 +29,50 @@ automation:
             target:
               entity_id: switch.gartenbewaesserung_pumpe
 
-  - alias: Schalte Taster 0 LED mit Pumpe ein
+  # Pumpen-LED (Taster 0):
+  #   aus   = Strom aus (Tasmota off)
+  #   gruen = einsatzbereit: Strom an, aber Druckschalter haelt den Motor gerade an (~0 W)
+  #   gelb  = Pumpe laeuft aktiv (Motor zieht Strom)
+  # Lauf-Erkennung ueber die Leistungsmessung des Tasmota (Pumpe laeuft ~900 W, einsatzbereit ~0 W; Schwelle 20 W).
+  - alias: Gartenbewaesserung Pumpen-LED
     triggers:
       - trigger: state
         entity_id: switch.gartenbewaesserung_pumpe
-        to: "on"
+      - trigger: numeric_state
+        entity_id: sensor.gartenbewaesserung_pumpe_energy_power
+        above: 20
+      - trigger: numeric_state
+        entity_id: sensor.gartenbewaesserung_pumpe_energy_power
+        below: 20
+    mode: restart
     actions:
-      - action: select.select_option
-        target:
-          entity_id: select.gartenbewaesserung_astra_taster_0_led
-        data:
-          option: green
-
-  - alias: Schalte Taster 0 LED mit Pumpe aus
-    triggers:
-      - trigger: state
-        entity_id: switch.gartenbewaesserung_pumpe
-        to: "off"
-    actions:
-      - action: select.select_option
-        target:
-          entity_id: select.gartenbewaesserung_astra_taster_0_led
-        data:
-          option: "off"
+      - choose:
+          # Strom aus -> LED aus
+          - conditions:
+              - condition: state
+                entity_id: switch.gartenbewaesserung_pumpe
+                state: "off"
+            sequence:
+              - action: select.select_option
+                target:
+                  entity_id: select.gartenbewaesserung_astra_taster_0_led
+                data:
+                  option: "off"
+          # Strom an UND Motor zieht Strom -> laeuft -> gelb
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.gartenbewaesserung_pumpe_energy_power
+                above: 20
+            sequence:
+              - action: select.select_option
+                target:
+                  entity_id: select.gartenbewaesserung_astra_taster_0_led
+                data:
+                  option: yellow
+        # sonst: Strom an, Motor aus -> einsatzbereit -> gruen
+        default:
+          - action: select.select_option
+            target:
+              entity_id: select.gartenbewaesserung_astra_taster_0_led
+            data:
+              option: green
