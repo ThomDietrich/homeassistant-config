@@ -3,6 +3,17 @@ automation:
     triggers:
       - trigger: state
         entity_id: event.kinderzimmer_irene_taster_zwischentuer_taster_ereignis
+        # WICHTIG: nur bei echtem Tastendruck feuern (state wird dann ein Zeitstempel).
+        # Beim Reconnect/Reboot des ESP geht der Event-Entity auf 'unavailable' bzw. 'unknown'.
+        # Das Attribut event_type bleibt dabei erhalten, und diese Entity hat ohnehin nur
+        # EINEN Typ (button_pressed_short) -- die Bedingung unten ist nach dem ersten
+        # Tastendruck also dauerhaft wahr und faengt nichts ab. Ohne diesen Filter wurde die
+        # Deckenlampe bei JEDEM Geraete-Neustart und jedem HA-Reload umgeschaltet. Genau
+        # deshalb war diese Datei von 2026-05-07 bis 2026-10-03 komplett auskommentiert.
+        # Gleicher Fehler und gleicher Fix wie in gartenbewaesserung_controller.yaml.
+        not_to:
+          - unavailable
+          - unknown
     conditions:
       - condition: state
         entity_id: event.kinderzimmer_irene_taster_zwischentuer_taster_ereignis
@@ -13,13 +24,16 @@ automation:
         target:
           entity_id: light.kinderzimmer_irene_licht
 
+  # Taster am Bett (IKEA SOMRIG, Zigbee2MQTT). Feuert pro Druck eine Folge
+  # (initial_press -> short_release), daher nur auf initial_press toggeln, sonst
+  # schaltet ein Druck zweimal. 'not_to' war hier schon korrekt gesetzt.
   - alias: Kinderzimmer-Irene Deckenlicht mit Taster am Bett
     triggers:
       - trigger: state
         entity_id: event.kinderzimmer_irene_taster_bett_action
         not_to:
-          - "unknown"
-          - "unavailable"
+          - unavailable
+          - unknown
     conditions:
       - condition: template
         value_template: >-
