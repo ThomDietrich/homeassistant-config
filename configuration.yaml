@@ -19,17 +19,10 @@ homeassistant:
 
 frontend:
   themes: !include_dir_merge_named themes
-  extra_module_url:
-    - /config/www/community/lovelace-card-mod/card-mod.js
 
 recorder:
   purge_keep_days: 3
   auto_purge: true
-
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 192.168.23.0/24
 
 logger:
   default: info
@@ -40,7 +33,6 @@ logger:
 logbook:
   exclude:
     entities:
-      - sensor.weather_station_weewx_update_datetime
       - sensor.epaper_display_oben_last_update
       - sensor.watchman_last_updated
       - automation.regel_heizungsregelung_gastherme_sollwert_uber_prozent_schieberegler
