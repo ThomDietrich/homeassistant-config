@@ -16,7 +16,15 @@ advanced:
   channel: 25
   network_key: '!secret network_key'
   pan_id: 34818
-  ext_pan_id: [241, 173, 200, 170, 137, 53, 255, 49]
+  ext_pan_id:
+    - 241
+    - 173
+    - 200
+    - 170
+    - 137
+    - 53
+    - 255
+    - 49
   transmit_power: 20
   last_seen: ISO_8601_local
 frontend:
@@ -84,8 +92,6 @@ devices:
     friendly_name: Buero Heizstellglied
   '0x00158d008b04cacc':
     friendly_name: Buero Raumsensor
-  '0xa4c138882bf6faf8':
-    friendly_name: Keller Carbon Monoxide Alarm
   '0x08ddebfffef48eb0':
     friendly_name: UG Bad Deckenlicht
   '0x08ddebfffef4a86b':
@@ -94,3 +100,7 @@ devices:
     friendly_name: OG Baustelle Raumsensor
   '0x00158d000af2233a':
     friendly_name: OG Schlafstube Raumsensor
+  '0x04cd15fffe2d350f':
+    friendly_name: Hof Hoftor Taster
+  '0x60b763fffe82e582':
+    friendly_name: Hof Pool Messboje
