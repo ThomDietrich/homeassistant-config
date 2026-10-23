@@ -37,7 +37,7 @@ template:
         state: >-
           {% set modules_count = 24 %}
           {% set area = 0.182 * 0.091 * 108 * modules_count %}
-          {% set radiation = states('sensor.weather_station_radiation_wpm2') | float(0) %}
+          {% set radiation = states('sensor.garten_ventus_w830_sonnenstrahlung') | float(0) %}
           {% set modules_production = states('sensor.dachboden_10ktl_active_power') | float(0) %}
           {% set inv_efficiency = states('sensor.dachboden_10ktl_efficiency') | float(0) / 100 %}
           {% set modules_radiation = radiation * area %}
@@ -47,7 +47,7 @@ template:
             unknown
           {% endif %}
         availability: >-
-          {{ has_value('sensor.weather_station_radiation_wpm2') and has_value('sensor.dachboden_10ktl_active_power') and states('sensor.dachboden_10ktl_efficiency') != "unavailable" }}
+          {{ has_value('sensor.garten_ventus_w830_sonnenstrahlung') and has_value('sensor.dachboden_10ktl_active_power') and states('sensor.dachboden_10ktl_efficiency') != "unavailable" }}
 
       # Phasenleistung
 
