@@ -23,17 +23,19 @@ sensor:
     latitude: !secret latitude
     longitude: !secret longitude
 
-  # Statistics sensors over outdoor temperature
+  # Statistics sensors over outdoor temperature (18 h rolling min/max)
   - platform: statistics
-    name: weather_station_outtemp_c_18h_min
-    entity_id: sensor.weather_station_outtemp_c
+    name: Garten Ventus W830 Außentemperatur Minimum (18h)
+    unique_id: garten_ventus_w830_aussentemperatur_18h_min
+    entity_id: sensor.garten_ventus_w830_aussentemperatur
     state_characteristic: value_min
     max_age:
       hours: 18
     sampling_size: 600
   - platform: statistics
-    name: weather_station_outtemp_c_18h_max
-    entity_id: sensor.weather_station_outtemp_c
+    name: Garten Ventus W830 Außentemperatur Maximum (18h)
+    unique_id: garten_ventus_w830_aussentemperatur_18h_max
+    entity_id: sensor.garten_ventus_w830_aussentemperatur
     state_characteristic: value_max
     max_age:
       hours: 18
