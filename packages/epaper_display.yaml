@@ -22,10 +22,11 @@ template:
   # --- State-getriggert (poll on dependent state changes) --------------------
   - sensor:
       - name: ePaper Display Position Werner
+        unique_id: epaper_display_position_werner
         icon: mdi:tooltip-account
         state: >
           {%- set pos = states('device_tracker.wd_pixel_6a') -%}
-          {% if pos == 'unknown' %}
+          {% if pos in ['unknown', 'unavailable'] %}
             {{ '' }}
           {% elif pos == 'home' %}
             Zuh.
@@ -36,10 +37,11 @@ template:
           {% endif %}
 
       - name: ePaper Display Position Irene
+        unique_id: epaper_display_position_irene
         icon: mdi:tooltip-account
         state: >
-          {%- set pos = states('device_tracker.irene_smartphone_redmi') -%}
-          {% if pos == 'unknown' %}
+          {%- set pos = states('device_tracker.irene_redmi') -%}
+          {% if pos in ['unknown', 'unavailable'] %}
             {{ '' }}
           {% elif pos == 'home' %}
             Zuh.
@@ -48,13 +50,14 @@ template:
           {% endif %}
 
       - name: ePaper Display Position Thomas
+        unique_id: epaper_display_position_thomas
         icon: mdi:tooltip-account
         state: >
           {%- set pos  = states('device_tracker.ths23u') -%}
           {%- set wifi = states('sensor.ths23u_wifi_connection') -%}
           {% if wifi == 'My CUPRA 5951' %}
             Auto
-          {% elif pos == 'unknown' %}
+          {% elif pos in ['unknown', 'unavailable'] %}
             {{ '' }}
           {% elif pos == 'home' %}
             Zuh.
@@ -65,10 +68,11 @@ template:
           {% endif %}
 
       - name: ePaper Display Position Stephan
+        unique_id: epaper_display_position_stephan
         icon: mdi:tooltip-account
         state: >
           {%- set pos = states('sensor.baublindfuchs_rest_person_stephan') -%}
-          {% if pos == 'unknown' %}
+          {% if pos in ['unknown', 'unavailable'] %}
             {{ '' }}
           {% elif pos == 'home' %}
             Woh.
@@ -87,9 +91,9 @@ template:
         unit_of_measurement: "kWh"
         state: >
           {% if is_state('sensor.dwd_forecast_tagesstempel', 'Heute') %}
-            {{ states('sensor.solcast_awf1877s_prognose_heute') | round(0) }}
+            {{ states('sensor.solcast_awf1877s_prognose_heute') | round(0) | int }}
           {% else %}
-            {{ states('sensor.solcast_awf1877s_prognose_morgen') | round(0) }}
+            {{ states('sensor.solcast_awf1877s_prognose_morgen') | round(0) | int }}
           {% endif %}
         availability: >
           {{ has_value('sensor.solcast_awf1877s_prognose_heute')
@@ -109,13 +113,15 @@ template:
           - calendar.nurzen100_stephan_dietrich_stephan_nurzen_de
     sensor:
       - name: ePaper Display Datumsstempel
+        unique_id: epaper_display_datumsstempel
         icon: mdi:calendar
         state: >
           {% set weekdays_short = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] %}
           {% set months_short = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"] %}
-          {{ weekdays_short[now().weekday()] + " " + now().strftime("%-d") + ". " + months_short[now().month - 1] }}
+          {{ weekdays_short[now().weekday()] + " " + (now().day | string) + ". " + months_short[now().month - 1] }}
 
       - name: ePaper Kalender Termin
+        unique_id: epaper_kalender_termin
         icon: mdi:tooltip-account
         state: >
           {%- set cal_name = 'calendar.wd1310_gmail_com' -%}
@@ -140,6 +146,7 @@ template:
           {% endif %}
 
       - name: ePaper Kalender Geburtstag
+        unique_id: epaper_kalender_geburtstag
         icon: mdi:tooltip-account
         state: >
           {%- set cal_name = 'calendar.geburtstage' -%}
@@ -159,6 +166,7 @@ template:
           {% endif %}
 
       - name: ePaper Kalender Feiertag
+        unique_id: epaper_kalender_feiertag
         icon: mdi:tooltip-account
         state: >
           {%- set cal_name = 'calendar.feiertage_in_deutschland' -%}
@@ -178,6 +186,7 @@ template:
           {% endif %}
 
       - name: ePaper Kalender Nurzen100
+        unique_id: epaper_kalender_nurzen100
         icon: mdi:tooltip-account
         state: >
           {%- set cal_name = 'calendar.nurzen100_stephan_dietrich_stephan_nurzen_de' -%}
