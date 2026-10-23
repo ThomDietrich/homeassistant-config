@@ -94,19 +94,19 @@ template:
         unit_of_measurement: "°C"
         # state_class: measurement
         state: >
-          {% if has_value('sensor.weather_station_windchill_c') %}
-            {% set x = states('sensor.weather_station_windchill_c') | float(0) %}
+          {% if has_value('sensor.garten_ventus_w830_windkuhle') %}
+            {% set x = states('sensor.garten_ventus_w830_windkuhle') | float(0) %}
           {% else %}
             {% set x = states('sensor.pferdestall_temperature') | float(0) %}
           {% endif %}
           {{ (-0.0002 * x**3 - 0.0045 * x**2 - 0.9782 * x + 44.141) | round(1) }}
         availability: >
-          {{ has_value('sensor.weather_station_windchill_c') or has_value('sensor.pferdestall_temperature') }}
+          {{ has_value('sensor.garten_ventus_w830_windkuhle') or has_value('sensor.pferdestall_temperature') }}
 
   - trigger:
       - trigger: state
         entity_id:
-          - sensor.weather_station_windchill_c
+          - sensor.garten_ventus_w830_windkuhle
           - sensor.pferdestall_temperature
           - input_boolean.keller_zh_heizung_automation
           - input_number.keller_zh_heizung_heizkennlinie_offset

@@ -63,7 +63,7 @@ automation:
         for:
           minutes: 30
       - trigger: state
-        entity_id: sensor.weather_station_outtemp_c
+        entity_id: sensor.garten_ventus_w830_aussentemperatur
         to:
           - "unknown"
           - "unavailable"
@@ -99,10 +99,10 @@ automation:
       - alias: "Wetterstation meldet <5°C oder ist nicht verfügbar"
         or:
           - condition: numeric_state
-            entity_id: sensor.weather_station_windchill_c
+            entity_id: sensor.garten_ventus_w830_windkuhle
             below: 5
           - condition: state
-            entity_id: sensor.weather_station_windchill_c
+            entity_id: sensor.garten_ventus_w830_windkuhle
             state:
               - unknown
               - unavailable
