@@ -10,11 +10,6 @@ automation:
         not_to:
           - "unknown"
           - "unavailable"
-    conditions:
-      - condition: template
-        value_template: >-
-          {{ trigger.to_state.attributes.event_type in
-             ['on', 'off', 'brightness_move_up', 'brightness_move_down'] }}
     actions:
       - action: esphome.keller_zh_regelung_warmwasser_anfordern
         data:
@@ -22,11 +17,11 @@ automation:
             {{ states('input_number.keller_zh_warmwasser_temperatur_sollwert_manuell') | float(50) }}
       - action: switch.turn_on
         target:
-          entity_id: switch.heizungsregelung_warmwasser_zirkulationspumpe
+          entity_id: switch.keller_zh_warmwasserspeicher_zirkulationspumpe
       - action: esphome.haus_uv_astra_play_rtttl
         data:
           song_str: "ack:d=8,o=6,b=100:8f,16g"
       - delay: "0:10:00"
       - action: switch.turn_off
         target:
-          entity_id: switch.heizungsregelung_warmwasser_zirkulationspumpe
+          entity_id: switch.keller_zh_warmwasserspeicher_zirkulationspumpe
