@@ -19,6 +19,7 @@ secrets.yaml
 
 # Non-track folders
 blueprints/
+image/
 .cache/
 custom_components/
 custom_templates/
