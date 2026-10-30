@@ -7,15 +7,18 @@
 #
 # Quittiert wird durch Ausschalten des jeweiligen input_boolean.
 
+# Bewusst OHNE `initial:` - sonst setzt Home Assistant den Wert bei jedem Start
+# fest und ueberschreibt den wiederhergestellten Zustand. Ein Neustart wuerde
+# damit einen anstehenden Alarm von selbst quittieren: die Meldung ist weg, der
+# Anlass nicht. Ohne `initial:` greift `restore_state`, und eine Warnung
+# ueberlebt den Neustart. (Meldewesen-Plan Phase 1.2, 2026-10-30)
 input_boolean:
   system_meldung_warn:
     name: Systemweite Warnmeldung (Flur Buzzer)
     icon: mdi:alert-octagram-outline
-    initial: false
   system_meldung_alarm:
     name: Systemweite Alarmmeldung (Flur Buzzer)
     icon: mdi:alert-octagram
-    initial: false
 
 ################################################################################
 
