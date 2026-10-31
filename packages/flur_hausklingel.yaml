@@ -5,7 +5,13 @@ automation:
         entity_id: binary_sensor.haus_uv_astra_klingel
         to: "on"
     actions:
-      - action: notify.werner_plus
+      # Empfaengerkreis am 2026-10-31 vom Operator entschieden
+      # (Meldewesen-Plan Phase 1.4): die Klingel ging nur an Werner,
+      # Thomas und Irene erfuhren nichts. Jetzt Werner und Thomas.
+      # Der direkte Aufruf ist Absicht - eine Klingel ist keine Warnung,
+      # sie braucht keine Quittierung und keinen Flur-Buzzer, der alle
+      # 30 Minuten nachlegt.
+      - action: notify.werner_thomas_plus
         data:
           title: AWF1877 Hausklingel
           message: "🔔 Es klingelt jemand an der Haustür! 🔔"
