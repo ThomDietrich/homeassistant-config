@@ -1,0 +1,24 @@
+AWF1877:
+  # Backend default theme for light and dark (frontend.set_theme). It changes no colours:
+  # it only carries UI eXtension (UIX, successor of card-mod) styles. A theme named
+  # "default" is never applied by the frontend, so UIX could not see one under that name.
+  # uix-theme must name this theme exactly, case included.
+  uix-theme: AWF1877
+
+  # Device page: the middle column with the entity names is too narrow to read them.
+  # Info column one third, entities two thirds, activity in full width below.
+  # HA lays the columns out with flexbox, so flex-grow/flex-basis instead of width.
+  uix-config-yaml: |
+    "ha-config-device-page $": |
+      .column:nth-child(3) {
+        flex-grow: 2;
+      }
+      .column:nth-child(4) {
+        flex-basis: 100%;
+      }
+
+  # Empty on purpose: declaring both modes keeps the user's light/dark choice working;
+  # a theme without modes would force light mode.
+  modes:
+    light: {}
+    dark: {}
