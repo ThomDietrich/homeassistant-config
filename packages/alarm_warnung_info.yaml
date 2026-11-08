@@ -14,10 +14,10 @@
 # ueberlebt den Neustart. (Meldewesen-Plan Phase 1.2, 2026-10-30)
 input_boolean:
   system_meldung_warn:
-    name: Systemweite Warnmeldung (Flur Buzzer)
+    name: Warnmeldung
     icon: mdi:alert-octagram-outline
   system_meldung_alarm:
-    name: Systemweite Alarmmeldung (Flur Buzzer)
+    name: Alarmmeldung
     icon: mdi:alert-octagram
 
 ################################################################################
@@ -36,6 +36,15 @@ script:
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.system_meldung_alarm
+      # Der Anlass im Logbuch, am Flag: die Logbuch-Karte im Admin-Dashboard zeigt so,
+      # worum es ging, nicht nur dass das Flag kam. continue_on_error, weil ein
+      # Logbuchfehler die Benachrichtigung nie verhindern darf.
+      - action: logbook.log
+        continue_on_error: true
+        data:
+          name: Alarmmeldung
+          entity_id: input_boolean.system_meldung_alarm
+          message: "{{ msg_title }}: {{ msg_text }}"
       - action: notify.werner_thomas_plus
         data:
           title: "{{ msg_title }}"
@@ -61,6 +70,13 @@ script:
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.system_meldung_warn
+      # Anlass ins Logbuch, am Flag (siehe notify_alarm).
+      - action: logbook.log
+        continue_on_error: true
+        data:
+          name: Warnmeldung
+          entity_id: input_boolean.system_meldung_warn
+          message: "{{ msg_title }}: {{ msg_text }}"
       - action: notify.werner_thomas_plus
         data:
           title: "{{ msg_title }}"
